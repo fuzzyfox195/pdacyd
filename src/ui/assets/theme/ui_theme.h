@@ -11,11 +11,12 @@
 #define COLOR_ICON_VOICE_NOTE lv_color_hex(0xFF9500) // temp only
 
 #define COLOR_BACKGROUND lv_color_hex(0xFFFFFF)
-#define RADIUS_DEFAULT  12
+#define RADIUS_DEFAULT  4
 
 // for text
 #define HEADING_FONT &lv_font_montserrat_32
 #define SUBHEADING_FONT &lv_font_montserrat_24
+#define UNLOCK_GUIDE_FONT &lv_font_montserrat_18
 #define CONTENT_FONT &lv_font_montserrat_14
 
 #endif

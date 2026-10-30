@@ -7,8 +7,8 @@ extern "C" {
 
 #include "lvgl.h"
 
-// ---- Lock screen ----
 extern lv_obj_t * ui_lock_screen;
+extern lv_obj_t * ui_start_screen;
 
 void ui_init(void);
 
