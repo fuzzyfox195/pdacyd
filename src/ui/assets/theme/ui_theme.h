@@ -3,6 +3,8 @@
 #ifndef UI_THEME_H
 #define UI_THEME_H
 
+#define COLOR_MAIN_CONTENT lv_color_hex(0x000000)
+
 #define COLOR_PRIMARY   lv_color_hex(0x007AFF)
 #define COLOR_SECONDARY lv_color_hex(0x5856D6)
 #define COLOR_HINT_GRAY lv_color_hex(0x6E6E6E)

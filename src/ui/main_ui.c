@@ -13,10 +13,3 @@ void ui_init(void)
     ui_lock_screen_screen_init();
     lv_disp_load_scr(ui_lock_screen);
 }
-
-
-#ifdef LVGL_LIVE_PREVIEW
-void lvgl_live_preview_init(void) {
-    ui_init();
-}
-#endif

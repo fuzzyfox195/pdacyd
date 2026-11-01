@@ -1,9 +1,18 @@
 #include <Arduino.h>
+#include <esp32-hal-adc.h>
 #include <esp_heap_caps.h>
 #include <lvgl.h>
 #include <LGFX_config.hpp>
 #include <lcd_pins.h>
 #include "ui/main_ui.h"
+#include "ui/status_bar/status_bar.h"
+
+static constexpr uint8_t BATTERY_ADC_PIN = 9;
+
+static void battery_adc_timer(lv_timer_t *)
+{
+    ui_status_bar_set_battery_adc(analogRead(BATTERY_ADC_PIN));
+}
 
 LGFX lcd;
 
@@ -114,6 +123,11 @@ void setup() {
     indev_drv.type = LV_INDEV_TYPE_POINTER;
     indev_drv.read_cb = my_touch_read;
     lv_indev_drv_register(&indev_drv);
+
+    analogReadResolution(12);
+    analogSetPinAttenuation(BATTERY_ADC_PIN, ADC_11db);
+    ui_status_bar_set_battery_adc(analogRead(BATTERY_ADC_PIN));
+    lv_timer_create(battery_adc_timer, 1000, nullptr);
     ui_init();
 }
 
