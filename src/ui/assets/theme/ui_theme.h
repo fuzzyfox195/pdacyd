@@ -10,10 +10,11 @@
 #define COLOR_HINT_GRAY lv_color_hex(0x6E6E6E)
 
 // for app icon
-#define COLOR_ICON_VOICE_NOTE lv_color_hex(0xFF9500) // temp only
+#define COLOR_ICON_VOICE_NOTE lv_color_hex(0x19896D) // temp only
 
 #define COLOR_BACKGROUND lv_color_hex(0xFFFFFF)
 #define RADIUS_DEFAULT  4
+#define RADIUS_APP_TILE 8
 
 // for text
 #define HEADING_FONT &lv_font_montserrat_32

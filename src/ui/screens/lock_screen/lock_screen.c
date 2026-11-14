@@ -45,10 +45,3 @@ void ui_lock_screen_screen_init(void)
     lv_obj_clear_flag(square_button, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_scrollbar_mode(square_button, LV_SCROLLBAR_MODE_OFF);
 }
-
-#ifdef LVGL_LIVE_PREVIEW
-// gives the live preview tool a way to initialize your UI
-void lvgl_live_preview_init(void) {
-    ui_init();
-}
-#endif

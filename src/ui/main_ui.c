@@ -11,5 +11,6 @@ void ui_init(void)
     lv_disp_set_theme(dispp, theme);
 
     ui_lock_screen_screen_init();
-    lv_disp_load_scr(ui_lock_screen);
+    ui_start_screen_screen_init();
+    lv_disp_load_scr(ui_start_screen);
 }
