@@ -10,7 +10,7 @@ static lv_obj_t *draw_function_big(lv_obj_t *parent, const char *appName,
     // This tile have fixed size: 100x100 px
     lv_obj_t *tile = lv_obj_create(parent);
     lv_obj_remove_style_all(tile);
-    lv_obj_set_size(tile, 100, 100);
+    lv_obj_set_size(tile, 147, 100);
     lv_obj_set_pos(tile, x, y);
     lv_obj_set_style_bg_color(tile, COLOR_BACKGROUND, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(tile, LV_OPA_COVER, LV_PART_MAIN);
@@ -21,7 +21,7 @@ static lv_obj_t *draw_function_big(lv_obj_t *parent, const char *appName,
     lv_obj_t *app_name = lv_label_create(tile);
     lv_label_set_text(app_name, appName);
     lv_obj_set_style_text_color(app_name, color, LV_PART_MAIN);
-    lv_obj_set_style_text_font(app_name, &lv_font_montserrat_12, LV_PART_MAIN);
+    lv_obj_set_style_text_font(app_name, &lv_font_montserrat_18, LV_PART_MAIN);
     lv_obj_align(app_name, LV_ALIGN_BOTTOM_LEFT, 4, -2);
 
     
