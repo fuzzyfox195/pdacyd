@@ -14,7 +14,7 @@
 
 const start_screen_tile_config_t start_screen_apps[] = {
 
-    {"weather", "Weather", "Ha Noi", "32 °C, feel like 34 °C\nRainy day",
+    {"weather", "Weather", "Ha Noi", "32 °C, feel like 34 °C",
         0x2583E8, 8, 0, START_SCREEN_TILE_LARGE_WIDTH, START_SCREEN_TILE_LARGE_HEIGHT,
         START_SCREEN_TILE_STYLE_LARGE},
 
@@ -22,7 +22,7 @@ const start_screen_tile_config_t start_screen_apps[] = {
         0x159A79, 163, 0, START_SCREEN_TILE_LARGE_WIDTH, START_SCREEN_TILE_LARGE_HEIGHT,
         START_SCREEN_TILE_STYLE_LARGE},
 
-    {"music", "Komposer", "", "Em dau\nPhung Khan Linh...",
+    {"music", "Komposer", "Local", "Em dau\nPhung Khan Linh...",
         0x12B85A, 8, 108, START_SCREEN_TILE_LARGE_WIDTH, START_SCREEN_TILE_LARGE_HEIGHT,
         START_SCREEN_TILE_STYLE_LARGE},
 
@@ -34,17 +34,18 @@ const start_screen_tile_config_t start_screen_apps[] = {
         0xD50055, 163, 162, START_SCREEN_TILE_SMALL_WIDTH, START_SCREEN_TILE_SMALL_HEIGHT,
         START_SCREEN_TILE_STYLE_SMALL},
 
-    {"testing", "Testing", NULL, NULL,
-        0xD50055, 8, 216, START_SCREEN_TILE_SMALL_WIDTH, START_SCREEN_TILE_SMALL_HEIGHT,
+    {"calendar", "Calendar", NULL, NULL,
+        0xF28A12, 8, 216, START_SCREEN_TILE_LARGE_WIDTH, START_SCREEN_TILE_LARGE_HEIGHT,
+        START_SCREEN_TILE_STYLE_LARGE},
+
+    {"timer", "Timer", NULL, NULL,
+        0xF28A12, 163, 216, START_SCREEN_TILE_SMALL_WIDTH, START_SCREEN_TILE_SMALL_HEIGHT,
         START_SCREEN_TILE_STYLE_SMALL},
 
-    {"calendar", "Calendar", NULL, NULL,
-        0xF28A12, 8, 270, START_SCREEN_TILE_LARGE_WIDTH, START_SCREEN_TILE_LARGE_HEIGHT,
-        START_SCREEN_TILE_STYLE_LARGE},
+    {"stopwatch", "Stopwatch", NULL, NULL,
+        0xF28A12, 163, 270, START_SCREEN_TILE_SMALL_WIDTH, START_SCREEN_TILE_SMALL_HEIGHT,
+        START_SCREEN_TILE_STYLE_SMALL},
 
-    {"navigation", "Navigation", NULL, NULL,
-        0x2583E8, 163, 216, START_SCREEN_TILE_LARGE_WIDTH, START_SCREEN_TILE_LARGE_HEIGHT,
-        START_SCREEN_TILE_STYLE_LARGE},
 };
 
 const uint16_t start_screen_app_count =

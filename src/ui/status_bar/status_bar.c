@@ -2,7 +2,6 @@
 #include "../assets/include_theme.h"
 
 #define STATUS_BAR_HEIGHT 24
-#define STATUS_BAR_CONTENT_COLOR lv_color_hex(0x202124)
 
 static lv_obj_t *battery_fill;
 static int latest_adc_raw;
@@ -55,7 +54,7 @@ void ui_status_bar_create(lv_obj_t *parent)
 
     lv_obj_t *time = lv_label_create(bar);
     lv_label_set_text(time, "12:30");
-    lv_obj_set_style_text_color(time, STATUS_BAR_CONTENT_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_text_color(time, COLOR_STATUS_BAR_CONTENT, LV_PART_MAIN);
     lv_obj_set_style_text_font(time, &lv_font_montserrat_18, LV_PART_MAIN);
     lv_obj_align(time, LV_ALIGN_LEFT_MID, 8, 0);
 
@@ -70,20 +69,20 @@ void ui_status_bar_create(lv_obj_t *parent)
     lv_obj_remove_style_all(battery);
     lv_obj_set_size(battery, battery_width, 15);
     lv_obj_align(battery, LV_ALIGN_RIGHT_MID, battery_right_offset, 0);
-    lv_obj_set_style_border_color(battery, STATUS_BAR_CONTENT_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_border_color(battery, COLOR_STATUS_BAR_CONTENT, LV_PART_MAIN);
     lv_obj_set_style_border_width(battery, 2, LV_PART_MAIN);
     lv_obj_set_style_radius(battery, 3, LV_PART_MAIN);
     lv_obj_clear_flag(battery, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_t *battery_cap = make_rect(bar, 3, 7, STATUS_BAR_CONTENT_COLOR, 1);
+    lv_obj_t *battery_cap = make_rect(bar, 3, 7, COLOR_STATUS_BAR_CONTENT, 1);
     lv_obj_align_to(battery_cap, battery, LV_ALIGN_OUT_RIGHT_MID, 1, 0);
-    battery_fill = make_rect(battery, 14, 9, STATUS_BAR_CONTENT_COLOR, 1);
+    battery_fill = make_rect(battery, 14, 9, COLOR_STATUS_BAR_CONTENT, 1);
     lv_obj_align(battery_fill, LV_ALIGN_LEFT_MID, 1, 0);
 
     lv_obj_t *signal_base = make_rect(bar, signal_width, 1, COLOR_BACKGROUND, 0);
     lv_obj_align(signal_base, LV_ALIGN_BOTTOM_RIGHT, signal_right_offset, -4);
     const lv_coord_t heights[] = {7, 10, 13, 15};
     for (int i = 0; i < 4; ++i) {
-        lv_obj_t *bar_segment = make_rect(bar, 4, heights[i], STATUS_BAR_CONTENT_COLOR, 1);
+        lv_obj_t *bar_segment = make_rect(bar, 4, heights[i], COLOR_STATUS_BAR_CONTENT, 1);
         lv_obj_align_to(bar_segment, signal_base, LV_ALIGN_BOTTOM_LEFT, 1 + i * 6, 0);
     }
 
@@ -92,10 +91,10 @@ void ui_status_bar_create(lv_obj_t *parent)
     lv_obj_remove_style_all(phone);
     lv_obj_set_size(phone, 10, 16);
     lv_obj_align(phone, LV_ALIGN_RIGHT_MID, phone_right_offset, 0);
-    lv_obj_set_style_border_color(phone, STATUS_BAR_CONTENT_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_border_color(phone, COLOR_STATUS_BAR_CONTENT, LV_PART_MAIN);
     lv_obj_set_style_border_width(phone, 2, LV_PART_MAIN);
     lv_obj_set_style_radius(phone, 2, LV_PART_MAIN);
     lv_obj_clear_flag(phone, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_t *phone_dot = make_rect(phone, 2, 2, STATUS_BAR_CONTENT_COLOR, LV_RADIUS_CIRCLE);
+    lv_obj_t *phone_dot = make_rect(phone, 2, 2, COLOR_STATUS_BAR_CONTENT, LV_RADIUS_CIRCLE);
     lv_obj_align(phone_dot, LV_ALIGN_BOTTOM_MID, 0, -1);
 }
