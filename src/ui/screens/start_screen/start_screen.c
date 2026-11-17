@@ -8,6 +8,9 @@
 /* Coordinates are relative to the scroll area's top-left corner. The 8 px
  * gaps and margins match the reference layout; rows can be freely rearranged. */
 #define START_SCREEN_RUNTIME_TILE_LIMIT 32
+#define START_SCREEN_APP_ICON_SIZE 24
+#define START_SCREEN_APP_ICON_MARGIN 5
+#define START_SCREEN_APP_NAME_GAP 4
 typedef struct {
     const char *id;
     lv_obj_t *title;
@@ -16,6 +19,25 @@ typedef struct {
 } tile_runtime_t;
 static tile_runtime_t runtime_tiles[START_SCREEN_RUNTIME_TILE_LIMIT];
 static uint16_t runtime_tile_count;
+
+static lv_obj_t *create_app_icon(lv_obj_t *tile,
+                                 const start_screen_tile_config_t *config,
+                                 lv_align_t alignment,
+                                 lv_coord_t x_offset,
+                                 lv_coord_t y_offset)
+{
+    if (config->icon == NULL) return NULL;
+
+    lv_obj_t *icon = lv_img_create(tile);
+    lv_img_set_src(icon, config->icon);
+    lv_obj_set_style_img_recolor(icon,
+                                 lv_color_hex(config->app_color_hex),
+                                 LV_PART_MAIN);
+    lv_obj_set_style_img_recolor_opa(icon, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_align(icon, alignment, x_offset, y_offset);
+    lv_obj_clear_flag(icon, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
+    return icon;
+}
 
 static void create_large_tile_content(lv_obj_t *tile,
                                       const start_screen_tile_config_t *config)
@@ -42,27 +64,34 @@ static void create_large_tile_content(lv_obj_t *tile,
     /* A missing heading/description is allowed for simple large app tiles. */
     lv_obj_t *app_name = lv_label_create(tile);
     lv_label_set_text(app_name, config->app_name);
-    lv_obj_set_width(app_name, config->width - 10);
+    lv_obj_set_width(app_name, config->width - 10 - START_SCREEN_APP_ICON_SIZE -
+                                START_SCREEN_APP_NAME_GAP);
     lv_obj_set_style_text_color(app_name, lv_color_hex(config->app_color_hex), LV_PART_MAIN);
     lv_obj_set_style_text_font(app_name, &lv_font_montserrat_18, LV_PART_MAIN);
     lv_obj_set_style_text_align(app_name, LV_TEXT_ALIGN_LEFT, LV_PART_MAIN);
     lv_obj_align(app_name, LV_ALIGN_BOTTOM_LEFT, 5, -5);
     lv_obj_clear_flag(app_name, LV_OBJ_FLAG_SCROLLABLE);
+    create_app_icon(tile, config, LV_ALIGN_BOTTOM_RIGHT,
+                    -START_SCREEN_APP_ICON_MARGIN,
+                    -START_SCREEN_APP_ICON_MARGIN);
     runtime_tiles[runtime_tile_count++] = (tile_runtime_t){config->id, title, content, true};
 }
 
 static void create_small_tile_content(lv_obj_t *tile,
                                       const start_screen_tile_config_t *config)
 {
-    /* Small tiles contain only their app name, vertically centered and inset. */
+    /* Keep the name vertically centered and inset beside the right-aligned icon. */
     lv_obj_t *app_name = lv_label_create(tile);
     lv_label_set_text(app_name, config->app_name);
-    lv_obj_set_width(app_name, config->width - 10);
+    lv_obj_set_width(app_name, config->width - 10 - START_SCREEN_APP_ICON_SIZE -
+                                START_SCREEN_APP_NAME_GAP);
     lv_obj_set_style_text_color(app_name, lv_color_hex(config->app_color_hex), LV_PART_MAIN);
     lv_obj_set_style_text_font(app_name, &lv_font_montserrat_18, LV_PART_MAIN);
     lv_obj_set_style_text_align(app_name, LV_TEXT_ALIGN_LEFT, LV_PART_MAIN);
     lv_obj_align(app_name, LV_ALIGN_LEFT_MID, 5, 0);
     lv_obj_clear_flag(app_name, LV_OBJ_FLAG_SCROLLABLE);
+    create_app_icon(tile, config, LV_ALIGN_RIGHT_MID,
+                    -START_SCREEN_APP_ICON_MARGIN, 0);
     runtime_tiles[runtime_tile_count++] = (tile_runtime_t){config->id, NULL, NULL, false};
 }
 
@@ -90,6 +119,10 @@ static void create_app_tile(lv_obj_t *parent,
 
 void ui_start_screen_screen_init(void)
 {
+    if (ui_start_screen != NULL) {
+        lv_obj_del(ui_start_screen);
+        ui_start_screen = NULL;
+    }
     ui_start_screen = lv_obj_create(NULL);
     lv_obj_clear_flag(ui_start_screen, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_bg_color(ui_start_screen, COLOR_BACKGROUND, LV_PART_MAIN);
@@ -112,6 +145,7 @@ void ui_start_screen_screen_init(void)
     /* Keep the content panel non-scrollable: gestures belong to scroll_area. */
     lv_coord_t content_height = 0;
     runtime_tile_count = 0;
+    memset(runtime_tiles, 0, sizeof(runtime_tiles));
     for (uint16_t i = 0; i < start_screen_app_count; ++i) {
         const lv_coord_t tile_bottom = start_screen_apps[i].y + start_screen_apps[i].height;
         if (tile_bottom > content_height) content_height = tile_bottom;

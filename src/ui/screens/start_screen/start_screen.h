@@ -25,6 +25,7 @@ typedef struct {
     const char *app_name;
     const char *title;       /* Optional heading on large tiles. */
     const char *content;     /* Optional description below the heading. */
+    const lv_img_dsc_t *icon; /* App icon displayed at the lower-right corner. */
     uint32_t app_color_hex;
     lv_coord_t x;
     lv_coord_t y;
