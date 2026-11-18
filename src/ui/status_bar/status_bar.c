@@ -2,9 +2,21 @@
 #include "../assets/include_theme.h"
 
 #define STATUS_BAR_HEIGHT 24
+#define STATUS_BAR_INSTANCE_LIMIT 8
 
-static lv_obj_t *battery_fill;
+static lv_obj_t *battery_fills[STATUS_BAR_INSTANCE_LIMIT];
 static int latest_adc_raw;
+
+static void battery_fill_deleted(lv_event_t *event)
+{
+    lv_obj_t *deleted_fill = lv_event_get_target(event);
+    for (size_t i = 0; i < STATUS_BAR_INSTANCE_LIMIT; ++i) {
+        if (battery_fills[i] == deleted_fill) {
+            battery_fills[i] = NULL;
+            return;
+        }
+    }
+}
 
 static lv_obj_t *make_rect(lv_obj_t *parent, lv_coord_t width, lv_coord_t height,
                            lv_color_t color, lv_coord_t radius)
@@ -31,8 +43,10 @@ static void update_battery(int adc_raw)
     if (percent > 100) percent = 100;
     percent = ((percent + 2) / 5) * 5;
 
-    if (battery_fill != NULL) {
-        lv_obj_set_width(battery_fill, (lv_coord_t)(14 * percent / 100));
+    for (size_t i = 0; i < STATUS_BAR_INSTANCE_LIMIT; ++i) {
+        if (battery_fills[i] != NULL) {
+            lv_obj_set_width(battery_fills[i], (lv_coord_t)(14 * percent / 100));
+        }
     }
 }
 
@@ -75,8 +89,20 @@ void ui_status_bar_create(lv_obj_t *parent)
     lv_obj_clear_flag(battery, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_t *battery_cap = make_rect(bar, 3, 7, COLOR_STATUS_BAR_CONTENT, 1);
     lv_obj_align_to(battery_cap, battery, LV_ALIGN_OUT_RIGHT_MID, 1, 0);
-    battery_fill = make_rect(battery, 14, 9, COLOR_STATUS_BAR_CONTENT, 1);
+    lv_obj_t *battery_fill = make_rect(battery, 14, 9, COLOR_STATUS_BAR_CONTENT, 1);
     lv_obj_align(battery_fill, LV_ALIGN_LEFT_MID, 1, 0);
+    bool tracked = false;
+    for (size_t i = 0; i < STATUS_BAR_INSTANCE_LIMIT; ++i) {
+        if (battery_fills[i] == NULL) {
+            battery_fills[i] = battery_fill;
+            tracked = true;
+            break;
+        }
+    }
+    if (tracked) {
+        lv_obj_add_event_cb(battery_fill, battery_fill_deleted, LV_EVENT_DELETE, NULL);
+    }
+    update_battery(latest_adc_raw);
 
     lv_obj_t *signal_base = make_rect(bar, signal_width, 1, COLOR_BACKGROUND, 0);
     lv_obj_align(signal_base, LV_ALIGN_BOTTOM_RIGHT, signal_right_offset, -4);

@@ -3,6 +3,7 @@
 #include "../../main_ui.h"
 #include "../../status_bar/status_bar.h"
 #include "../../assets/include_theme.h"
+#include "../../../core/application_manager/application_manager.h"
 #include <string.h>
 
 /* Coordinates are relative to the scroll area's top-left corner. The 8 px
@@ -95,6 +96,14 @@ static void create_small_tile_content(lv_obj_t *tile,
     runtime_tiles[runtime_tile_count++] = (tile_runtime_t){config->id, NULL, NULL, false};
 }
 
+static void app_tile_clicked(lv_event_t *event)
+{
+    const char *app_id = (const char *)lv_event_get_user_data(event);
+    if (app_id != NULL) {
+        (void)application_manager_launch(app_id);
+    }
+}
+
 static void create_app_tile(lv_obj_t *parent,
                             const start_screen_tile_config_t *config)
 {
@@ -109,6 +118,9 @@ static void create_app_tile(lv_obj_t *parent,
     lv_obj_set_style_border_color(tile, lv_color_hex(config->app_color_hex), LV_PART_MAIN);
     lv_obj_set_style_radius(tile, RADIUS_APP_TILE, LV_PART_MAIN);
     lv_obj_clear_flag(tile, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(tile, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(tile, app_tile_clicked, LV_EVENT_CLICKED,
+                        (void *)config->id);
 
     if (config->style == START_SCREEN_TILE_STYLE_SMALL) {
         create_small_tile_content(tile, config);

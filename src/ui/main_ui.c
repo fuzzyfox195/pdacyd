@@ -1,6 +1,7 @@
 #include "main_ui.h"
 #include "include_screen.h"
 #include "assets/include_theme.h"
+#include "../core/application_manager/application_manager.h"
 
 lv_obj_t * ui_lock_screen;
 lv_obj_t * ui_start_screen;
@@ -9,6 +10,7 @@ ui_theme_type_t ui_theme_current_type = UI_THEME_LIGHT;
 
 void ui_init(void)
 {
+    application_manager_init();
     lv_disp_t * dispp = lv_disp_get_default();
     lv_theme_t * theme = lv_theme_default_init(
         dispp, COLOR_PRIMARY, COLOR_SECONDARY,
