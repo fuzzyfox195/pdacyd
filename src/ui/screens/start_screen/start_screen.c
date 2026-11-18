@@ -190,11 +190,3 @@ bool ui_start_screen_update_tile(const char *app_id, const char *title,
     }
     return false;
 }
-
-#ifdef LVGL_LIVE_PREVIEW
-// Gives the live preview tool a way to initialize this UI.
-void lvgl_live_preview_init(void)
-{
-    ui_init();
-}
-#endif

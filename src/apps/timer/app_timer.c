@@ -48,11 +48,25 @@ static lv_obj_t *timer_create_ui(void)
     return screen;
 }
 
-static void timer_on_enter(void) {}
-static void timer_on_pause(void) {}
-static void timer_on_resume(void) {}
-static void timer_on_exit(void) {}
-static void timer_deinit(void) {}
+static void timer_on_enter(void) {
+    // for preloaded task when user start app
+    // like in weather is update new weather information
+}
+
+static void timer_on_pause(void) {
+    // will be use if app is allow to run in background
+}
+static void timer_on_resume(void) {
+    // will be use if app is allow to run in background
+}
+
+static void timer_on_exit(void) {
+    // back to home screen, maybe just it
+}
+
+static void timer_deinit(void) {
+    // Use to remove resource used in void init
+}
 
 const app_descriptor_t app_timer = {
     .app_id = "timer",

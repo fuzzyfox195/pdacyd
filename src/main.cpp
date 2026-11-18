@@ -134,6 +134,7 @@ void setup() {
 void loop() {
     static uint32_t last_tick = millis();
     const uint32_t now = millis();
+
     lv_tick_inc(now - last_tick);
     last_tick = now;
 

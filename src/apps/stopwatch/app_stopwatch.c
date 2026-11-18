@@ -24,35 +24,30 @@ static lv_obj_t *stopwatch_create_ui(void)
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
     ui_status_bar_create(screen);
 
-    lv_obj_t *title = lv_label_create(screen);
-    lv_label_set_text(title, "Stopwatch");
-    lv_obj_set_style_text_font(title, HEADING_FONT, LV_PART_MAIN);
-    lv_obj_set_style_text_color(title, COLOR_MAIN_CONTENT, LV_PART_MAIN);
-    lv_obj_align(title, LV_ALIGN_TOP_LEFT, 12, 44);
-
-    lv_obj_t *message = lv_label_create(screen);
-    lv_label_set_text(message, "The Stopwatch app is coming soon.");
-    lv_obj_set_style_text_font(message, CONTENT_FONT, LV_PART_MAIN);
-    lv_obj_set_style_text_color(message, COLOR_HINT_GRAY, LV_PART_MAIN);
-    lv_obj_align(message, LV_ALIGN_CENTER, 0, 0);
-
-    lv_obj_t *back_button = lv_btn_create(screen);
-    lv_obj_set_size(back_button, 90, 38);
-    lv_obj_align(back_button, LV_ALIGN_BOTTOM_LEFT, 12, -12);
-    lv_obj_add_event_cb(back_button, stopwatch_back_clicked, LV_EVENT_CLICKED, NULL);
-
-    lv_obj_t *back_label = lv_label_create(back_button);
-    lv_label_set_text(back_label, "Back");
-    lv_obj_center(back_label);
 
     return screen;
 }
 
-static void stopwatch_on_enter(void) {}
-static void stopwatch_on_pause(void) {}
-static void stopwatch_on_resume(void) {}
-static void stopwatch_on_exit(void) {}
-static void stopwatch_deinit(void) {}
+static void stopwatch_on_enter(void) {
+    // for preloaded task when user start app
+    // like in weather is update new weather information
+}
+
+static void stopwatch_on_pause(void) {
+    // will be use if app is allow to run in background
+}
+
+static void stopwatch_on_resume(void) {
+    // will be use if app is allow to run in background
+}
+
+static void stopwatch_on_exit(void) {
+    // back to home screen, maybe just it
+}
+
+static void stopwatch_deinit(void) {
+    // Use to remove resource used in void init
+}
 
 const app_descriptor_t app_stopwatch = {
     .app_id = "stopwatch",
@@ -65,3 +60,11 @@ const app_descriptor_t app_stopwatch = {
     .on_exit = stopwatch_on_exit,
     .deinit = stopwatch_deinit,
 };
+
+#ifdef LVGL_LIVE_PREVIEW
+// Gives the live preview tool a way to initialize this UI.
+void lvgl_live_preview_init(void)
+{
+    stopwatch_create_ui();
+}
+#endif

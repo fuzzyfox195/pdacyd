@@ -41,7 +41,7 @@ const start_screen_tile_config_t start_screen_apps[] = {
         0xD50055, 163, 162, START_SCREEN_TILE_SMALL_WIDTH, START_SCREEN_TILE_SMALL_HEIGHT,
         START_SCREEN_TILE_STYLE_SMALL},
 
-    {"calendar", "Calendar", NULL, NULL, &calendar_icon,
+    {"calendar", "Calendar", "19 May", NULL, &calendar_icon,
         0xF28A12, 8, 216, START_SCREEN_TILE_LARGE_WIDTH, START_SCREEN_TILE_LARGE_HEIGHT,
         START_SCREEN_TILE_STYLE_LARGE},
 
