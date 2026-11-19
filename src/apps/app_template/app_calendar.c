@@ -86,6 +86,15 @@ const app_descriptor_t app_calendar = {
 };
 
 
+#ifdef LVGL_LIVE_PREVIEW
+void lvgl_live_preview_init(void)
+{
+    calendar_init();
+    lv_obj_t *screen = calendar_create_ui();
+    if (screen != NULL) lv_scr_load(screen);
+}
+#endif
+
 
 ---------------------------------------------------
 END COMMENT */ 

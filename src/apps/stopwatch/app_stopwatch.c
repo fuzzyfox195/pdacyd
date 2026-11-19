@@ -280,12 +280,3 @@ const app_descriptor_t app_stopwatch = {
     .on_exit = stopwatch_on_exit,
     .deinit = stopwatch_deinit,
 };
-
-#ifdef LVGL_LIVE_PREVIEW
-void lvgl_live_preview_init(void)
-{
-    stopwatch_init();
-    lv_obj_t *screen = stopwatch_create_ui();
-    if (screen != NULL) lv_screen_load(screen);
-}
-#endif

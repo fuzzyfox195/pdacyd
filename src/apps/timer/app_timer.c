@@ -10,10 +10,10 @@
 extern const lv_img_dsc_t timer_icon;
 
 enum TimerState {
-    TIMER_STATE_IDLE,
-    TIMER_STATE_SETTED,
-    TIMER_STATE_RUNNING,
-    TIMER_STATE_PAUSED
+    TIMER_STATE_IDLE, // no time set, no timer running
+    TIMER_STATE_SETTED, // time set, but timer not running
+    TIMER_STATE_RUNNING, // timer running
+    TIMER_STATE_PAUSED // time set, timer paused
 };
 
 #define TIMER_UPDATE_PERIOD_MS 100
@@ -39,6 +39,7 @@ typedef struct {
 static enum TimerState timer_state;
 static uint32_t timer_elapsed_ms;
 static uint32_t timer_started_at;
+static uint32_t timer_setted_ms;
 static lv_obj_t *timer_hours_label;
 static lv_obj_t *timer_minutes_label;
 static lv_obj_t *timer_seconds_label;
@@ -51,12 +52,15 @@ static void timer_update_display(void)
     if (timer_hours_label == NULL || timer_minutes_label == NULL ||
         timer_seconds_label == NULL) return;
 
-    uint32_t elapsed_ms = timer_elapsed_ms;
+    uint32_t remaining_ms = timer_elapsed_ms;
     if (timer_state == TIMER_STATE_RUNNING) {
-        elapsed_ms += lv_tick_get() - timer_started_at;
+        uint32_t elapsed_since_start = lv_tick_get() - timer_started_at;
+        remaining_ms = elapsed_since_start >= remaining_ms
+                           ? 0
+                           : remaining_ms - elapsed_since_start;
     }
 
-    uint32_t total_seconds = elapsed_ms / 1000U;
+    uint32_t total_seconds = remaining_ms / 1000U;
     uint32_t hours = total_seconds / 3600U;
     uint32_t minutes = (total_seconds % 3600U) / 60U;
     uint32_t seconds = total_seconds % 60U;
@@ -75,6 +79,16 @@ static void timer_update_display(void)
 static void timer_update_timer_cb(lv_timer_t *timer)
 {
     (void)timer;
+    if (timer_state == TIMER_STATE_RUNNING) {
+        uint32_t elapsed_since_start = lv_tick_get() - timer_started_at;
+        if (elapsed_since_start >= timer_elapsed_ms) {
+            timer_elapsed_ms = 0;
+            timer_state = TIMER_STATE_IDLE;
+            if (timer_control_label != NULL) {
+                lv_label_set_text(timer_control_label, "Start");
+            }
+        }
+    }
     timer_update_display();
 }
 
@@ -83,6 +97,7 @@ static bool timer_init(void)
     timer_state = TIMER_STATE_IDLE;
     timer_elapsed_ms = 0;
     timer_started_at = 0;
+    timer_setted_ms = 0;
     timer_hours_label = NULL;
     timer_minutes_label = NULL;
     timer_seconds_label = NULL;
@@ -99,18 +114,69 @@ static void timer_back_clicked(lv_event_t *event)
 
 static void timer_reset_clicked(lv_event_t *event)
 {
-    timer_state = TIMER_STATE_IDLE;
+    (void)event;
+    if (timer_state == TIMER_STATE_IDLE) {
+        return;
+    }
+    else if (timer_state == TIMER_STATE_SETTED) {
+        timer_elapsed_ms = 0;
+        timer_setted_ms = 0;
+        timer_state = TIMER_STATE_IDLE;
+    } else if (timer_state == TIMER_STATE_RUNNING) {
+        timer_elapsed_ms = timer_setted_ms;
+        timer_started_at = lv_tick_get();
+    } else if (timer_state == TIMER_STATE_PAUSED) {
+        timer_setted_ms = 0;
+        timer_elapsed_ms = 0;
+    }
+    timer_update_display();
 }
 
 static void timer_continue_pause_clicked(lv_event_t *event)
 {
-
+    (void)event;
+    if (timer_state == TIMER_STATE_IDLE) {
+        if (timer_control_label != NULL) lv_label_set_text(timer_control_label, "Start");
+    } else if (timer_state == TIMER_STATE_SETTED) {
+        timer_elapsed_ms = timer_setted_ms;
+        if (timer_elapsed_ms == 0) return;
+        timer_started_at = lv_tick_get();
+        timer_state = TIMER_STATE_RUNNING;
+        if (timer_control_label != NULL) lv_label_set_text(timer_control_label, "Pause");
+    } else if (timer_state == TIMER_STATE_RUNNING) {
+        uint32_t elapsed_since_start = lv_tick_get() - timer_started_at;
+        timer_elapsed_ms = elapsed_since_start >= timer_elapsed_ms
+                               ? 0
+                               : timer_elapsed_ms - elapsed_since_start;
+        timer_state = timer_elapsed_ms == 0 ? TIMER_STATE_IDLE : TIMER_STATE_PAUSED;
+        if (timer_control_label != NULL) {
+            lv_label_set_text(timer_control_label,
+                              timer_state == TIMER_STATE_IDLE ? "Start" : "Continue");
+        }
+    } else if (timer_state == TIMER_STATE_PAUSED) {
+        if (timer_elapsed_ms == 0) {
+            timer_state = TIMER_STATE_IDLE;
+            if (timer_control_label != NULL) {
+                lv_label_set_text(timer_control_label, "Start");
+            }
+            timer_update_display();
+            return;
+        }
+        timer_started_at = lv_tick_get();
+        timer_state = TIMER_STATE_RUNNING;
+        if (timer_control_label != NULL) lv_label_set_text(timer_control_label, "Pause");
+    }
+    timer_update_display();
 }
 
 static void timer_adjust_clicked(lv_event_t *event)
 {
     const timer_adjust_data_t *data = lv_event_get_user_data(event);
-    if (data == NULL || timer_state == TIMER_STATE_RUNNING) return;
+    if (data == NULL || data->unit >= TIMER_UNIT_COUNT ||
+        timer_state == TIMER_STATE_RUNNING) return;
+
+    if (timer_hours_label == NULL || timer_minutes_label == NULL ||
+        timer_seconds_label == NULL) return;
 
     lv_obj_t *labels[TIMER_UNIT_COUNT] = {
         timer_hours_label, timer_minutes_label, timer_seconds_label
@@ -126,6 +192,15 @@ static void timer_adjust_clicked(lv_event_t *event)
     char text[3];
     snprintf(text, sizeof(text), "%02d", value);
     lv_label_set_text(label, text);
+
+    timer_state = TIMER_STATE_SETTED;
+    timer_setted_ms = (
+        (uint32_t)strtoul(lv_label_get_text(timer_hours_label), NULL, 10) * 3600U +
+        (uint32_t)strtoul(lv_label_get_text(timer_minutes_label), NULL, 10) * 60U +
+        (uint32_t)strtoul(lv_label_get_text(timer_seconds_label), NULL, 10)) * 1000U;
+    timer_elapsed_ms = timer_setted_ms;
+    if (timer_control_label != NULL) lv_label_set_text(timer_control_label, "Start");
+    timer_update_display();
 }
 
 static void timer_create_adjust_button(lv_obj_t *parent, lv_obj_t *target,
@@ -189,7 +264,7 @@ static lv_obj_t *timer_create_ui(void)
     lv_obj_remove_style_all(time_row);
     lv_obj_clear_flag(time_row, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_size(time_row, group_width, LV_SIZE_CONTENT);
-    lv_obj_align(time_row, LV_ALIGN_TOP_MID, 0, 80);
+    lv_obj_align(time_row, LV_ALIGN_TOP_MID, 0, 70);
 
     timer_hours_label = lv_label_create(time_row);
     lv_label_set_text(timer_hours_label, "00");
@@ -244,8 +319,30 @@ static lv_obj_t *timer_create_ui(void)
         timer_create_adjust_button(screen, unit_labels[i], (timer_unit_t)i,
                                    1, LV_SYMBOL_UP, LV_ALIGN_OUT_TOP_MID, -5);
         timer_create_adjust_button(screen, unit_labels[i], (timer_unit_t)i,
-                                   -1, LV_SYMBOL_DOWN, LV_ALIGN_OUT_BOTTOM_MID, 5);
+                                   -1, LV_SYMBOL_DOWN, LV_ALIGN_OUT_BOTTOM_MID, 4);
     }
+
+    lv_obj_t *control_button = lv_btn_create(screen);
+    lv_obj_set_size(control_button, 120, 40);
+    lv_obj_align(control_button, LV_ALIGN_LEFT_MID, 30, 70);
+    lv_obj_add_event_cb(control_button, timer_continue_pause_clicked, LV_EVENT_CLICKED, NULL);
+    timer_control_label = lv_label_create(control_button);
+    lv_label_set_text(timer_control_label, "Start");
+    lv_obj_set_style_text_font(timer_control_label, CONTENT_TIMER_CONTROL_FONT, LV_PART_MAIN);
+    lv_obj_center(timer_control_label);
+
+    lv_obj_t *reset_button = lv_btn_create(screen);
+    lv_obj_set_size(reset_button, 120, 40);
+    lv_obj_align(reset_button, LV_ALIGN_RIGHT_MID, -30, 70);
+    lv_obj_add_event_cb(reset_button, timer_reset_clicked, LV_EVENT_CLICKED, NULL);
+    lv_obj_t *reset_label = lv_label_create(reset_button);
+    lv_label_set_text(reset_label, "Reset");
+    lv_obj_set_style_text_font(reset_label, CONTENT_TIMER_CONTROL_FONT, LV_PART_MAIN);
+    lv_obj_center(reset_label);
+
+    timer_update_timer = lv_timer_create(timer_update_timer_cb,
+                                         TIMER_UPDATE_PERIOD_MS, NULL);
+    if (timer_update_timer == NULL) return NULL;
 
     return screen;
 }
@@ -267,7 +364,10 @@ static void timer_on_exit(void) {
 }
 
 static void timer_deinit(void) {
-    // Use to remove resource used in void init
+    if (timer_update_timer != NULL) {
+        lv_timer_del(timer_update_timer);
+        timer_update_timer = NULL;
+    }
 }
 
 const app_descriptor_t app_timer = {
@@ -290,3 +390,13 @@ const app_descriptor_t app_timer = {
     .on_exit = timer_on_exit,
     .deinit = timer_deinit,
 };
+
+
+#ifdef LVGL_LIVE_PREVIEW
+void lvgl_live_preview_init(void)
+{
+    timer_init();
+    lv_obj_t *screen = timer_create_ui();
+    if (screen != NULL) lv_scr_load(screen);
+}
+#endif
