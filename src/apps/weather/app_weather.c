@@ -3,6 +3,8 @@
 #include "../../ui/assets/include_theme.h"
 #include "../../ui/status_bar/status_bar.h"
 
+extern const lv_img_dsc_t weather_icon;
+
 static bool weather_init(void)
 {
     return true;
@@ -57,6 +59,15 @@ static void weather_deinit(void) {}
 const app_descriptor_t app_weather = {
     .app_id = "weather",
     .app_name = "Weather",
+    .start_tile = {
+        .icon = &weather_icon,
+        .color_hex = 0x2583E8,
+        .size = APP_TILE_SIZE_LARGE,
+        .x = 8,
+        .y = 0,
+        .title = "Ha Noi",
+        .content = "32 °C, feel like 34 °C",
+    },
     .init = weather_init,
     .create_ui = weather_create_ui,
     .on_enter = weather_on_enter,

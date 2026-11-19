@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+extern const lv_img_dsc_t stopwatch_icon;
+
 enum StopwatchState {
     STOPWATCH_STATE_IDLE,
     STOPWATCH_STATE_RUNNING,
@@ -261,6 +263,15 @@ static void stopwatch_deinit(void)
 const app_descriptor_t app_stopwatch = {
     .app_id = "stopwatch",
     .app_name = "Stopwatch",
+    .start_tile = {
+        .icon = &stopwatch_icon,
+        .color_hex = 0xF28A12,
+        .size = APP_TILE_SIZE_SMALL,
+        .x = 163,
+        .y = 270,
+        .title = NULL,
+        .content = NULL,
+    },
     .init = stopwatch_init,
     .create_ui = stopwatch_create_ui,
     .on_enter = stopwatch_on_enter,

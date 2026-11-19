@@ -3,6 +3,8 @@
 #include "../../ui/assets/include_theme.h"
 #include "../../ui/status_bar/status_bar.h"
 
+extern const lv_img_dsc_t timer_icon;
+
 static bool timer_init(void)
 {
     return true;
@@ -71,6 +73,15 @@ static void timer_deinit(void) {
 const app_descriptor_t app_timer = {
     .app_id = "timer",
     .app_name = "Timer",
+    .start_tile = {
+        .icon = &timer_icon,
+        .color_hex = 0xF28A12,
+        .size = APP_TILE_SIZE_SMALL,
+        .x = 163,
+        .y = 216,
+        .title = NULL,
+        .content = NULL,
+    },
     .init = timer_init,
     .create_ui = timer_create_ui,
     .on_enter = timer_on_enter,

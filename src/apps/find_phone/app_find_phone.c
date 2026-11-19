@@ -3,6 +3,8 @@
 #include "../../ui/assets/include_theme.h"
 #include "../../ui/status_bar/status_bar.h"
 
+extern const lv_img_dsc_t findphone_icon;
+
 static bool findphone_init(void)
 {
     return true;
@@ -57,6 +59,15 @@ static void findphone_deinit(void) {}
 const app_descriptor_t app_find_phone = {
     .app_id = "find_phone",
     .app_name = "Find phone",
+    .start_tile = {
+        .icon = &findphone_icon,
+        .color_hex = 0xD50055,
+        .size = APP_TILE_SIZE_SMALL,
+        .x = 163,
+        .y = 162,
+        .title = NULL,
+        .content = NULL,
+    },
     .init = findphone_init,
     .create_ui = findphone_create_ui,
     .on_enter = findphone_on_enter,

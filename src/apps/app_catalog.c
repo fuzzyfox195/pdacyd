@@ -1,19 +1,13 @@
 #include "app_catalog.h"
-#include "weather/app_weather.h"
-#include "voice_note/app_voice_note.h"
-#include "music/app_music.h"
-#include "setting/app_setting.h"
-#include "find_phone/app_find_phone.h"
-#include "calendar/app_calendar.h"
-#include "timer/app_timer.h"
-#include "stopwatch/app_stopwatch.h"
+#include "app_registry.h"
+
 #include <string.h>
 
-/* Keep the registry in the same stable order as the Start Screen catalog. */
+#define APP_REGISTRY_ENTRY(symbol) &symbol,
 static const app_descriptor_t *const app_registry[] = {
-    &app_weather, &app_voice_note, &app_music, &app_setting,
-    &app_find_phone, &app_calendar, &app_timer, &app_stopwatch,
+    APP_REGISTRY(APP_REGISTRY_ENTRY)
 };
+#undef APP_REGISTRY_ENTRY
 
 const app_descriptor_t *app_catalog_find(const char *app_id)
 {
@@ -26,7 +20,7 @@ const app_descriptor_t *app_catalog_find(const char *app_id)
 
 size_t app_catalog_count(void)
 {
-    return sizeof(app_registry) / sizeof(app_registry[0]);
+    return APP_REGISTRY_COUNT;
 }
 
 const app_descriptor_t *app_catalog_at(size_t index)

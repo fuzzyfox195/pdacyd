@@ -3,6 +3,8 @@
 #include "../../ui/assets/include_theme.h"
 #include "../../ui/status_bar/status_bar.h"
 
+extern const lv_img_dsc_t voicenote_icon;
+
 static bool voicenote_init(void)
 {
     return true;
@@ -57,6 +59,15 @@ static void voicenote_deinit(void) {}
 const app_descriptor_t app_voice_note = {
     .app_id = "voice_note",
     .app_name = "Voice note",
+    .start_tile = {
+        .icon = &voicenote_icon,
+        .color_hex = 0x159A79,
+        .size = APP_TILE_SIZE_LARGE,
+        .x = 163,
+        .y = 0,
+        .title = "12 notes",
+        .content = "Use your voice to take note",
+    },
     .init = voicenote_init,
     .create_ui = voicenote_create_ui,
     .on_enter = voicenote_on_enter,

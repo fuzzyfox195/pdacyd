@@ -3,6 +3,8 @@
 #include "../../ui/assets/include_theme.h"
 #include "../../ui/status_bar/status_bar.h"
 
+extern const lv_img_dsc_t music_icon;
+
 static bool music_init(void)
 {
     return true;
@@ -57,6 +59,15 @@ static void music_deinit(void) {}
 const app_descriptor_t app_music = {
     .app_id = "music",
     .app_name = "Komposer",
+    .start_tile = {
+        .icon = &music_icon,
+        .color_hex = 0x12B85A,
+        .size = APP_TILE_SIZE_LARGE,
+        .x = 8,
+        .y = 108,
+        .title = "Local",
+        .content = "Em dau\nPhung Khan Linh...",
+    },
     .init = music_init,
     .create_ui = music_create_ui,
     .on_enter = music_on_enter,

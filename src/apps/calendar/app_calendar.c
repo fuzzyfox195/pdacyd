@@ -3,6 +3,8 @@
 #include "../../ui/assets/include_theme.h"
 #include "../../ui/status_bar/status_bar.h"
 
+extern const lv_img_dsc_t calendar_icon;
+
 static bool calendar_init(void)
 {
     return true;
@@ -57,6 +59,15 @@ static void calendar_deinit(void) {}
 const app_descriptor_t app_calendar = {
     .app_id = "calendar",
     .app_name = "Calendar",
+    .start_tile = {
+        .icon = &calendar_icon,
+        .color_hex = 0xF28A12,
+        .size = APP_TILE_SIZE_LARGE,
+        .x = 8,
+        .y = 216,
+        .title = "19 May",
+        .content = NULL,
+    },
     .init = calendar_init,
     .create_ui = calendar_create_ui,
     .on_enter = calendar_on_enter,

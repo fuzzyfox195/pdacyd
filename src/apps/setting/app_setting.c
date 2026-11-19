@@ -3,6 +3,8 @@
 #include "../../ui/assets/include_theme.h"
 #include "../../ui/status_bar/status_bar.h"
 
+extern const lv_img_dsc_t setting_icon;
+
 static bool setting_init(void)
 {
     return true;
@@ -57,6 +59,15 @@ static void setting_deinit(void) {}
 const app_descriptor_t app_setting = {
     .app_id = "setting",
     .app_name = "Setting",
+    .start_tile = {
+        .icon = &setting_icon,
+        .color_hex = 0x444444,
+        .size = APP_TILE_SIZE_SMALL,
+        .x = 163,
+        .y = 108,
+        .title = NULL,
+        .content = NULL,
+    },
     .init = setting_init,
     .create_ui = setting_create_ui,
     .on_enter = setting_on_enter,
