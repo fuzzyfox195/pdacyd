@@ -6,6 +6,7 @@
 #include "lvgl.h"
 
 LV_FONT_DECLARE(Google_san_code_bold_48px);
+LV_FONT_DECLARE(Google_san_code_bold_40px);
 
 typedef enum {
     UI_THEME_LIGHT,
@@ -40,6 +41,8 @@ const ui_theme_palette_t *ui_theme_get_current_palette(void);
 #define CONTENT_FONT &lv_font_montserrat_14
 #define CONTENT_STOPWATCH_FONT &Google_san_code_bold_48px
 #define CONTENT_STOPWATCH_CONTROL_FONT &lv_font_montserrat_24
+#define CONTENT_TIMER_FONT &Google_san_code_bold_40px
+#define CONTENT_TIMER_CONTROL_FONT &lv_font_montserrat_24
 
 
 // For testing font size

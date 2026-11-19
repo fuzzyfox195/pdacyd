@@ -179,4 +179,4 @@ Key configuration files:
 The repository provides the hardware integration and application-shell architecture. Real clock, Wi-Fi, weather, music, phone, and persistent storage services are not yet implemented. The current app screens are placeholders except for the Stopwatch UI.
 
 ## Special Thanks
-To my dear one. This is a gift I’ve always wanted to give you. It is a way for me to be present with you in this world.
+To my dear one. This is a gift I’ve always wanted to give you. It is a way for me to be present with you.
