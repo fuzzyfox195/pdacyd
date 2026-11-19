@@ -3,12 +3,10 @@
 static const ui_theme_palette_t light_theme = {
     .dark_mode = false,
     .main_content = 0x000000,
-    .primary = 0x007AFF,
-    .secondary = 0x5856D6,
+    .primary = 0x159150,
+    .secondary = 0x293a2b,
     .hint_gray = 0x6E6E6E,
-    .icon_voice_note = 0x19896D,
     .background = 0xFFFFFF,
-    .status_bar_content = 0x202124
 };
 
 static const ui_theme_palette_t dark_theme = {
@@ -17,20 +15,16 @@ static const ui_theme_palette_t dark_theme = {
     .primary = 0x0A84FF,
     .secondary = 0xBF5AF2,
     .hint_gray = 0xA1A1A6,
-    .icon_voice_note = 0x30D158,
     .background = 0x121212,
-    .status_bar_content = 0xF5F5F5
 };
 
 static const ui_theme_palette_t sunset_theme = {
-    .dark_mode = true,
-    .main_content = 0xFFE8D6,
-    .primary = 0xF97316,
-    .secondary = 0xC026D3,
+    .dark_mode = false,
+    .main_content = 0x522D60,
+    .primary = 0x522D60,
+    .secondary = 0x69596d,
     .hint_gray = 0xC08467,
-    .icon_voice_note = 0xE76F51,
-    .background = 0x2C1B18,
-    .status_bar_content = 0xFFE8D6
+    .background = 0xFFD38B,
 };
 
 typedef struct {

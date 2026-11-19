@@ -5,7 +5,7 @@
 
 lv_obj_t * ui_lock_screen;
 lv_obj_t * ui_start_screen;
-ui_theme_type_t ui_theme_current_type = UI_THEME_LIGHT;
+ui_theme_type_t ui_theme_current_type = UI_THEME_SUNSET;
 
 
 void ui_init(void)
