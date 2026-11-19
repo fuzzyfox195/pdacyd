@@ -41,5 +41,15 @@ const ui_theme_palette_t *ui_theme_get_current_palette(void);
 #define SUBHEADING_FONT &lv_font_montserrat_24
 #define UNLOCK_GUIDE_FONT &lv_font_montserrat_18
 #define CONTENT_FONT &lv_font_montserrat_14
+#define CONTENT_STOPWATCH_FONT &lv_font_montserrat_48
+#define CONTENT_STOPWATCH_CONTROL_FONT &lv_font_montserrat_20
+
+// For testing font size
+#define FONT_SIZE_12 &lv_font_montserrat_12
+#define FONT_SIZE_14 &lv_font_montserrat_14
+#define FONT_SIZE_16 &lv_font_montserrat_16
+#define FONT_SIZE_18 &lv_font_montserrat_18
+#define FONT_SIZE_20 &lv_font_montserrat_20
+#define FONT_SIZE_22 &lv_font_montserrat_22
 
 #endif
