@@ -1,9 +1,12 @@
 #include "system_init.h"
 #include "system_comm.h"
+#include "../storage/sd_storage.h"
 #include "../pro/pro_manager.h"
 #include <Arduino.h>
 
 bool system_init(void) {
+    const bool sd_ok = SDStorage::begin();
+    Serial.printf("[SYS] SD storage: %s\\n", sd_ok ? "mounted" : "unavailable");
     if (!system_comm_init()) {
         Serial.println("[SYS] communication initialization failed");
         return false;
