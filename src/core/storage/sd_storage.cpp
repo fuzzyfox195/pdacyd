@@ -38,10 +38,10 @@ bool begin() {
   }
   Serial.printf("[SD] mounted at %s, card size: %llu MB\n", MOUNT_POINT,
                 SD_MMC.cardSize() / (1024ULL * 1024ULL));
-  SD_MMC.mkdir("/sdcard/config");
-  SD_MMC.mkdir("/sdcard/data");
-  SD_MMC.mkdir("/sdcard/logs");
-  SD_MMC.mkdir("/sdcard/meta");
+  SD_MMC.mkdir("/config");
+  SD_MMC.mkdir("/data");
+  SD_MMC.mkdir("/logs");
+  SD_MMC.mkdir("/meta");
   return true;
 }
 
