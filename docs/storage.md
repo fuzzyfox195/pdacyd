@@ -19,3 +19,62 @@ Mount point: `/sdcard`. SD is persistent storage, not inter-core IPC. Core commu
 - `/sdcard/logs/system.log`, `error.log`: bounded text logs (rotation is a follow-up)
 
 Writes use a temporary file and rename where possible. This reduces exposure to partial JSON writes but is not a full transactional guarantee against SD removal or power loss. Avoid frequent writes; write configs on change, clock only on meaningful sync/update, weather only after successful fetch, and logs in batches.
+
+## JSON examples
+
+### system.json
+```json
+{
+  "schema_version": 1,
+  "device_name": "PDACYD",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "sleep_timeout_seconds": 60,
+  "brightness": 80
+}
+```
+
+### ui.json
+```json
+{
+  "schema_version": 1,
+  "theme": "dark",
+  "accent": "blue"
+}
+```
+
+### wifi.json
+```json
+{
+  "schema_version": 1,
+  "known_networks": [
+    { "ssid": "HomeWiFi", "password": "replace-me", "priority": 1 }
+  ]
+}
+```
+Do not commit real Wi-Fi credentials. Plain JSON stores secrets unencrypted.
+
+### clock.json
+```json
+{
+  "schema_version": 1,
+  "last_sync_unix": 0,
+  "timezone": "Asia/Ho_Chi_Minh",
+  "last_sync_ok": false
+}
+```
+
+### weather.json
+```json
+{
+  "schema_version": 1,
+  "provider": "",
+  "location_id": "",
+  "updated_unix": 0,
+  "current": {
+    "temperature_c": null,
+    "feels_like_c": null,
+    "humidity_percent": null,
+    "condition_code": null
+  }
+}
+```
