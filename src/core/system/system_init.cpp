@@ -6,7 +6,7 @@
 
 bool system_init(void) {
     const bool sd_ok = SDStorage::begin();
-    Serial.printf("[SYS] SD storage: %s\\n", sd_ok ? "mounted" : "unavailable");
+    Serial.printf("[SYS] SD storage: %s\n", sd_ok ? "mounted" : "unavailable");
     if (!system_comm_init()) {
         Serial.println("[SYS] communication initialization failed");
         return false;
