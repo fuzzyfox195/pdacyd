@@ -30,6 +30,13 @@ struct SystemSnapshot {
     uint32_t uptime_ms;
     bool time_synced;
     int64_t unix_time;
+    uint16_t time_year;
+    uint8_t time_month;
+    uint8_t time_day;
+    uint8_t time_hour;
+    uint8_t time_minute;
+    uint8_t time_second;
+    uint8_t time_weekday;
     float temperature_c;
     uint8_t humidity;
     uint32_t weather_updated_ms;

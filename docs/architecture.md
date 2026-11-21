@@ -7,6 +7,8 @@ This is a PlatformIO project (`src_dir = src`) using Arduino on `esp32-s3-devkit
 ## Module boundaries
 
 - `src/core/application_manager/`: app descriptor contract and one-foreground-app lifecycle.
+- `src/core/pro/`: Core 0 background services. `network/` reads SD Wi-Fi profiles and owns connection attempts; `time/` syncs from the Time.Now HTTPS API and owns the clock cache; `pro_logger` writes service events to SD. SNTP is used only to bootstrap TLS when no trusted clock cache exists.
+- `src/core/system/`: fixed-size command/event queues and a mutex-protected cross-core snapshot.
 - `src/core/screen_manager/`: LVGL screen selection, including return to the existing Home/Start Screen.
 - `src/apps/`: the ordered app registry and one directory per app. Each app owns its descriptor, Start Screen metadata, icon, UI, and lifecycle callbacks.
 - `src/ui/`: screens, status bar, and theme. The Start Screen reads app descriptors from the registry and forwards a tile's stable ID to the Application Manager.
@@ -16,7 +18,10 @@ This is a PlatformIO project (`src_dir = src`) using Arduino on `esp32-s3-devkit
 src/
 ├── core/
 │   ├── application_manager/
-│   └── screen_manager/
+│   ├── pro/network/           # SD Wi-Fi profile and connection service
+│   ├── pro/time/              # Time.Now API clock and SD cache service
+│   ├── screen_manager/
+│   └── system/                # inter-core snapshots and events
 ├── apps/
 │   ├── app_registry.h        # single ordered app list
 │   ├── app_catalog.c         # lookup over that list
@@ -35,4 +40,6 @@ The Start Screen uses the `.x` and `.y` coordinates in each app's descriptor and
 
 `ui_init()` initializes the manager once. Launch is accepted only when no app is active. The manager looks up the ID in `app_catalog.c`, invokes `init`, constructs the app screen, switches to it, then invokes `on_enter`. If initialization or screen construction fails, it calls `deinit` and leaves Home active. Back calls `application_manager_close()`: `on_exit`, switch to Home, destroy the app screen, then `deinit`. The Stopwatch app deletes its LVGL timer on exit. Shared services are not torn down by app exit.
 
-LVGL calls happen from UI event callbacks or `ui_init()` on the existing Arduino loop's LVGL owner. No background tasks are added. The repository currently has no clock, Wi-Fi, weather, music, phone, or persistent cache service interfaces; preview text remains static until those services are introduced.
+LVGL calls happen from UI event callbacks, `ui_init()`, or `system_app_poll()` on the existing Arduino loop's LVGL owner. The PRO task tries Wi-Fi profiles from `/config/wifi.json` in priority order, performs time API and SD work on Core 0, then publishes clock fields through the system snapshot. If all profiles fail, it holds the fallback date at 2024-01-01 00:00. The UI loop updates every status bar and refreshes the Calendar tile when the date changes. Weather, music, and phone services remain future work.
+
+Time source: [World Time API by Time.Now](https://time.now).

@@ -13,7 +13,8 @@
     X(app_find_phone) \
     X(app_calendar) \
     X(app_timer) \
-    X(app_stopwatch)
+    X(app_stopwatch) \
+    X(app_system_log)
 
 #define APP_REGISTRY_DECLARE(symbol) extern const app_descriptor_t symbol;
 APP_REGISTRY(APP_REGISTRY_DECLARE)

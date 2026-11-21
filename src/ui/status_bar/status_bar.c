@@ -5,7 +5,9 @@
 #define STATUS_BAR_INSTANCE_LIMIT 8
 
 static lv_obj_t *battery_fills[STATUS_BAR_INSTANCE_LIMIT];
+static lv_obj_t *time_labels[STATUS_BAR_INSTANCE_LIMIT];
 static int latest_adc_raw;
+static char latest_time_text[6] = "00:00";
 
 static void battery_fill_deleted(lv_event_t *event)
 {
@@ -13,6 +15,17 @@ static void battery_fill_deleted(lv_event_t *event)
     for (size_t i = 0; i < STATUS_BAR_INSTANCE_LIMIT; ++i) {
         if (battery_fills[i] == deleted_fill) {
             battery_fills[i] = NULL;
+            return;
+        }
+    }
+}
+
+static void time_label_deleted(lv_event_t *event)
+{
+    lv_obj_t *deleted_label = lv_event_get_target(event);
+    for (size_t i = 0; i < STATUS_BAR_INSTANCE_LIMIT; ++i) {
+        if (time_labels[i] == deleted_label) {
+            time_labels[i] = NULL;
             return;
         }
     }
@@ -56,6 +69,19 @@ void ui_status_bar_set_battery_adc(int adc_raw)
     update_battery(latest_adc_raw);
 }
 
+void ui_status_bar_set_time(uint8_t hour, uint8_t minute, bool valid)
+{
+    if (valid) {
+        lv_snprintf(latest_time_text, sizeof(latest_time_text), "%02u:%02u",
+                    (unsigned)hour, (unsigned)minute);
+    } else {
+        lv_snprintf(latest_time_text, sizeof(latest_time_text), "00:00");
+    }
+    for (size_t i = 0; i < STATUS_BAR_INSTANCE_LIMIT; ++i) {
+        if (time_labels[i] != NULL) lv_label_set_text(time_labels[i], latest_time_text);
+    }
+}
+
 void ui_status_bar_create(lv_obj_t *parent)
 {
     lv_obj_t *bar = lv_obj_create(parent);
@@ -67,10 +93,21 @@ void ui_status_bar_create(lv_obj_t *parent)
     lv_obj_clear_flag(bar, LV_OBJ_FLAG_SCROLLABLE);
 
     lv_obj_t *time = lv_label_create(bar);
-    lv_label_set_text(time, "12:30");
+    // New app screens inherit the last clock value instead of waiting for the
+    // next minute/second update from the system snapshot.
+    lv_label_set_text(time, latest_time_text);
     lv_obj_set_style_text_color(time, COLOR_MAIN_CONTENT, LV_PART_MAIN);
     lv_obj_set_style_text_font(time, &lv_font_montserrat_18, LV_PART_MAIN);
     lv_obj_align(time, LV_ALIGN_LEFT_MID, 8, 0);
+    bool time_tracked = false;
+    for (size_t i = 0; i < STATUS_BAR_INSTANCE_LIMIT; ++i) {
+        if (time_labels[i] == NULL) {
+            time_labels[i] = time;
+            time_tracked = true;
+            break;
+        }
+    }
+    if (time_tracked) lv_obj_add_event_cb(time, time_label_deleted, LV_EVENT_DELETE, NULL);
 
     const lv_coord_t icon_gap = 8;
     const lv_coord_t battery_width = 25;
