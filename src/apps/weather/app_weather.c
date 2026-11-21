@@ -66,7 +66,7 @@ const app_descriptor_t app_weather = {
         .x = 8,
         .y = 0,
         .title = "Ha Noi",
-        .content = "32 °C, feel like 34 °C",
+        .content = "32°C, feel like 34°C",
     },
     .init = weather_init,
     .create_ui = weather_create_ui,

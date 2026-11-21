@@ -6,6 +6,7 @@
 #include <lcd_pins.h>
 #include "ui/main_ui.h"
 #include "ui/status_bar/status_bar.h"
+#include "core/system/system_init.h"
 
 static constexpr uint8_t BATTERY_ADC_PIN = 9;
 
@@ -129,9 +130,15 @@ void setup() {
     ui_status_bar_set_battery_adc(analogRead(BATTERY_ADC_PIN));
     lv_timer_create(battery_adc_timer, 1000, nullptr);
     ui_init();
+
+    // PRO background services are pinned to Core 0; Arduino loop/UI remains on Core 1.
+    if (!system_init()) {
+        Serial.println("[SYS] Failed to start dual-core framework");
+    }
 }
 
 void loop() {
+    system_app_poll();
     static uint32_t last_tick = millis();
     const uint32_t now = millis();
 
