@@ -19,5 +19,5 @@ void ui_init(void)
 
     ui_lock_screen_screen_init();
     ui_start_screen_screen_init();
-    lv_disp_load_scr(ui_lock_screen);
+    lv_disp_load_scr(ui_start_screen);
 }
