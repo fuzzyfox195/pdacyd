@@ -6,8 +6,13 @@
 
 static lv_obj_t *battery_fills[STATUS_BAR_INSTANCE_LIMIT];
 static lv_obj_t *time_labels[STATUS_BAR_INSTANCE_LIMIT];
+static lv_obj_t *wifi_segments[STATUS_BAR_INSTANCE_LIMIT][4];
+static lv_obj_t *wifi_error_labels[STATUS_BAR_INSTANCE_LIMIT];
 static int latest_adc_raw;
 static char latest_time_text[6] = "00:00";
+static bool latest_wifi_connected;
+static bool latest_wifi_error;
+static uint8_t latest_wifi_signal_level;
 
 static void battery_fill_deleted(lv_event_t *event)
 {
@@ -27,6 +32,55 @@ static void time_label_deleted(lv_event_t *event)
         if (time_labels[i] == deleted_label) {
             time_labels[i] = NULL;
             return;
+        }
+    }
+}
+
+static void wifi_object_deleted(lv_event_t *event)
+{
+    lv_obj_t *deleted_object = lv_event_get_target(event);
+    for (size_t i = 0; i < STATUS_BAR_INSTANCE_LIMIT; ++i) {
+        if (wifi_error_labels[i] == deleted_object) {
+            wifi_error_labels[i] = NULL;
+            return;
+        }
+        for (size_t segment = 0; segment < 4; ++segment) {
+            if (wifi_segments[i][segment] == deleted_object) {
+                wifi_segments[i][segment] = NULL;
+                return;
+            }
+        }
+    }
+}
+
+static int reserve_wifi_slot(void)
+{
+    for (size_t i = 0; i < STATUS_BAR_INSTANCE_LIMIT; ++i) {
+        bool slot_free = wifi_error_labels[i] == NULL;
+        for (size_t segment = 0; segment < 4; ++segment) {
+            if (wifi_segments[i][segment] != NULL) slot_free = false;
+        }
+        if (slot_free) return (int)i;
+    }
+    return -1;
+}
+
+static void update_wifi_slot(size_t slot)
+{
+    for (size_t segment = 0; segment < 4; ++segment) {
+        lv_obj_t *bar = wifi_segments[slot][segment];
+        if (bar == NULL) continue;
+        if (latest_wifi_connected && segment < latest_wifi_signal_level) {
+            lv_obj_clear_flag(bar, LV_OBJ_FLAG_HIDDEN);
+        } else {
+            lv_obj_add_flag(bar, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+    if (wifi_error_labels[slot] != NULL) {
+        if (latest_wifi_error) {
+            lv_obj_clear_flag(wifi_error_labels[slot], LV_OBJ_FLAG_HIDDEN);
+        } else {
+            lv_obj_add_flag(wifi_error_labels[slot], LV_OBJ_FLAG_HIDDEN);
         }
     }
 }
@@ -82,6 +136,16 @@ void ui_status_bar_set_time(uint8_t hour, uint8_t minute, bool valid)
     }
 }
 
+void ui_status_bar_set_wifi_status(bool connected, bool error, uint8_t signal_level)
+{
+    latest_wifi_connected = connected;
+    latest_wifi_error = error && !connected;
+    latest_wifi_signal_level = signal_level > 4 ? 4 : signal_level;
+    for (size_t i = 0; i < STATUS_BAR_INSTANCE_LIMIT; ++i) {
+        update_wifi_slot(i);
+    }
+}
+
 void ui_status_bar_create(lv_obj_t *parent)
 {
     lv_obj_t *bar = lv_obj_create(parent);
@@ -115,6 +179,7 @@ void ui_status_bar_create(lv_obj_t *parent)
     const lv_coord_t battery_right_offset = -12;
     const lv_coord_t signal_right_offset = battery_right_offset - battery_width - icon_gap;
     const lv_coord_t phone_right_offset = signal_right_offset - signal_width - icon_gap;
+    const int wifi_slot = reserve_wifi_slot();
 
     lv_obj_t *battery = lv_obj_create(bar);
     lv_obj_remove_style_all(battery);
@@ -147,7 +212,24 @@ void ui_status_bar_create(lv_obj_t *parent)
     for (int i = 0; i < 4; ++i) {
         lv_obj_t *bar_segment = make_rect(bar, 4, heights[i], COLOR_MAIN_CONTENT, 1);
         lv_obj_align_to(bar_segment, signal_base, LV_ALIGN_BOTTOM_LEFT, 1 + i * 6, 0);
+        lv_obj_add_flag(bar_segment, LV_OBJ_FLAG_HIDDEN);
+        if (wifi_slot >= 0) {
+            wifi_segments[wifi_slot][i] = bar_segment;
+            lv_obj_add_event_cb(bar_segment, wifi_object_deleted, LV_EVENT_DELETE, NULL);
+        }
     }
+
+    lv_obj_t *wifi_error = lv_label_create(bar);
+    lv_label_set_text(wifi_error, "!");
+    lv_obj_set_style_text_font(wifi_error, &lv_font_montserrat_16, LV_PART_MAIN);
+    lv_obj_set_style_text_color(wifi_error, lv_palette_main(LV_PALETTE_RED), LV_PART_MAIN);
+    lv_obj_align(wifi_error, LV_ALIGN_BOTTOM_RIGHT, signal_right_offset + 5, -1);
+    lv_obj_add_flag(wifi_error, LV_OBJ_FLAG_HIDDEN);
+    if (wifi_slot >= 0) {
+        wifi_error_labels[wifi_slot] = wifi_error;
+        lv_obj_add_event_cb(wifi_error, wifi_object_deleted, LV_EVENT_DELETE, NULL);
+    }
+    if (wifi_slot >= 0) update_wifi_slot((size_t)wifi_slot);
 
     /* phone_connect placeholder: simple phone outline with a status dot */
     lv_obj_t *phone = lv_obj_create(bar);

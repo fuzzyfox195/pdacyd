@@ -14,6 +14,7 @@ namespace {
 constexpr size_t MAX_PROFILES = 8;
 constexpr size_t SSID_CAPACITY = 33;
 constexpr size_t PASSWORD_CAPACITY = 65;
+constexpr uint32_t RSSI_POLL_INTERVAL_MS = 10000;
 
 struct WifiProfile {
     char ssid[SSID_CAPACITY];
@@ -30,8 +31,12 @@ uint8_t attempts_started;
 uint8_t retries_per_profile = 2;
 uint32_t connect_timeout_ms = 10000;
 uint32_t attempt_started_ms;
+uint32_t last_rssi_sample_ms;
 State state = State::IDLE;
 bool initial_scan_complete;
+bool has_connected_once;
+bool has_rssi_sample;
+uint8_t signal_level;
 
 bool readNumber(const String &json, const char *key, int64_t &value) {
     const String needle = String("\"") + key + "\"";
@@ -183,8 +188,28 @@ void exhaustProfiles() {
     WiFi.disconnect(false, false);
     state = State::EXHAUSTED;
     initial_scan_complete = true;
+    signal_level = 0;
     pro_log_error("NETWORK", "all %u configured Wi-Fi profile(s) failed",
                   static_cast<unsigned>(profile_count));
+}
+
+uint8_t levelFromRssi(int rssi) {
+    if (rssi >= -55) return 4;
+    if (rssi >= -67) return 3;
+    if (rssi >= -75) return 2;
+    return 1;
+}
+
+void updateSignalLevel(uint32_t now_ms) {
+    if (!has_rssi_sample ||
+        static_cast<uint32_t>(now_ms - last_rssi_sample_ms) >= RSSI_POLL_INTERVAL_MS) {
+        last_rssi_sample_ms = now_ms;
+        has_rssi_sample = true;
+        const int rssi = WiFi.RSSI();
+        signal_level = rssi == 0 ? 1 : levelFromRssi(rssi);
+        pro_log_info("NETWORK", "signal quality rssi=%d dBm level=%u/4",
+                     rssi, static_cast<unsigned>(signal_level));
+    }
 }
 } // namespace
 
@@ -202,6 +227,9 @@ bool begin() {
     WiFi.disconnect(false, false);
     active_profile = 0;
     attempts_started = 0;
+    has_connected_once = false;
+    has_rssi_sample = false;
+    signal_level = 0;
     initial_scan_complete = profile_count == 0;
     if (profile_count == 0) {
         state = State::EXHAUSTED;
@@ -215,8 +243,13 @@ bool begin() {
 
 void poll(uint32_t now_ms) {
     if (state == State::CONNECTED) {
-        if (WiFi.status() == WL_CONNECTED) return;
+        if (WiFi.status() == WL_CONNECTED) {
+            updateSignalLevel(now_ms);
+            return;
+        }
         pro_log_warn("NETWORK", "Wi-Fi connection lost; restarting profile list");
+        signal_level = 0;
+        has_rssi_sample = false;
         active_profile = 0;
         attempts_started = 0;
         startAttempt(now_ms);
@@ -226,10 +259,12 @@ void poll(uint32_t now_ms) {
 
     if (WiFi.status() == WL_CONNECTED) {
         state = State::CONNECTED;
+        has_connected_once = true;
         initial_scan_complete = true;
         const String ip = WiFi.localIP().toString();
         pro_log_info("NETWORK", "connected ssid=\"%s\" ip=%s",
                      profiles[active_profile].ssid, ip.c_str());
+        updateSignalLevel(now_ms);
         return;
     }
 
@@ -253,6 +288,24 @@ void poll(uint32_t now_ms) {
 
 bool isConnected() {
     return state == State::CONNECTED && WiFi.status() == WL_CONNECTED;
+}
+
+NetworkState getState() {
+    switch (state) {
+        case State::CONNECTING:
+            return has_connected_once ? NetworkState::RECONNECTING : NetworkState::CONNECTING;
+        case State::CONNECTED:
+            return NetworkState::CONNECTED;
+        case State::EXHAUSTED:
+            return NetworkState::ERROR;
+        case State::IDLE:
+        default:
+            return NetworkState::UNINITIALIZED;
+    }
+}
+
+uint8_t signalLevel() {
+    return isConnected() ? signal_level : 0;
 }
 
 bool initialScanComplete() {
