@@ -173,15 +173,3 @@ const app_descriptor_t app_system_log = {
     .on_exit = system_log_on_exit,
     .deinit = system_log_deinit,
 };
-
-#ifdef LVGL_LIVE_PREVIEW
-void lvgl_live_preview_init(void)
-{
-    system_log_init();
-    lv_obj_t *screen = system_log_create_ui();
-    if (screen != NULL) {
-        lv_scr_load(screen);
-        system_log_on_enter();
-    }
-}
-#endif

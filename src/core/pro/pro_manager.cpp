@@ -17,7 +17,8 @@ static PDACYD::TimeService time_service;
 
 static void pro_task(void *) {
     SystemSnapshot state{};
-    state.network = NetworkState::DISCONNECTED;
+    state.network = NetworkState::UNINITIALIZED;
+    state.wifi_signal_level = 0;
     PDACYD::pro_log_info("PRO", "task started core=%d", PRO_CORE);
     time_service.begin();
     PDACYD::NetworkService::begin();
@@ -42,14 +43,14 @@ static void pro_task(void *) {
         time_service.poll(now_ms, wifi_connected,
                           PDACYD::NetworkService::initialScanComplete());
         const PDACYD::ClockSnapshot clock = time_service.getSnapshot();
-        const NetworkState network = wifi_connected ?
-                                     NetworkState::CONNECTED : NetworkState::DISCONNECTED;
+        const NetworkState network = PDACYD::NetworkService::getState();
         if (state.network != network) {
             state.network = network;
             SystemEvent network_event{SystemEventType::NETWORK_STATE_CHANGED,
                                       static_cast<uint32_t>(network), now_ms};
             system_publish_event(&network_event);
         }
+        state.wifi_signal_level = PDACYD::NetworkService::signalLevel();
         state.uptime_ms = now_ms;
         state.time_synced = clock.synchronized;
         state.unix_time = static_cast<int64_t>(clock.unix_time);

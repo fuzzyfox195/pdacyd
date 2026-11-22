@@ -81,8 +81,8 @@ docs/
 - Visual Studio Code with PlatformIO IDE, or the PlatformIO CLI
 - Python 3
 - USB data cable
-- Specific CYD or ESP32-S3 dev board with PSRAM, note that you have to manualy wiring your screen and mactch the display and touch driver.
-- (Only manual wiring) Compatible ILI9341 display and FT6236/FT6336U touch controller
+- Specific CYD or ESP32-S3 dev board with PSRAM, note that you have to manualy wiring your screen and match the display and touch driver if you don't have this specific CYD.
+- (Only for manual wiring) Compatible ILI9341 display and FT6236/FT6336U touch controller
 
 The project dependencies are managed by PlatformIO:
 

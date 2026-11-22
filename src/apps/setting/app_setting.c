@@ -26,26 +26,26 @@ static lv_obj_t *setting_create_ui(void)
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
     ui_status_bar_create(screen);
 
-    lv_obj_t *title = lv_label_create(screen);
-    lv_label_set_text(title, "Setting");
-    lv_obj_set_style_text_font(title, HEADING_FONT, LV_PART_MAIN);
-    lv_obj_set_style_text_color(title, COLOR_MAIN_CONTENT, LV_PART_MAIN);
-    lv_obj_align(title, LV_ALIGN_TOP_LEFT, 12, 44);
-
-    lv_obj_t *message = lv_label_create(screen);
-    lv_label_set_text(message, "The Setting app is coming soon.");
-    lv_obj_set_style_text_font(message, CONTENT_FONT, LV_PART_MAIN);
-    lv_obj_set_style_text_color(message, COLOR_HINT_GRAY, LV_PART_MAIN);
-    lv_obj_align(message, LV_ALIGN_CENTER, 0, 0);
-
     lv_obj_t *back_button = lv_btn_create(screen);
     lv_obj_set_size(back_button, 90, 38);
-    lv_obj_align(back_button, LV_ALIGN_BOTTOM_LEFT, 12, -12);
+    lv_obj_align(back_button, LV_ALIGN_BOTTOM_LEFT, 12, -8);
     lv_obj_add_event_cb(back_button, setting_back_clicked, LV_EVENT_CLICKED, NULL);
-
     lv_obj_t *back_label = lv_label_create(back_button);
     lv_label_set_text(back_label, "Back");
     lv_obj_center(back_label);
+
+    lv_obj_t *tabview;
+    tabview = lv_tabview_create(screen, LV_DIR_BOTTOM, 40);
+    lv_obj_set_size(tabview, 310, 200);
+    lv_obj_set_style_border_width(tabview, 2, LV_PART_MAIN);
+    lv_obj_set_style_radius(tabview, RADIUS_APP_TILE, LV_PART_MAIN);
+    lv_obj_set_style_border_color(tabview, COLOR_PRIMARY, LV_PART_MAIN);
+    lv_obj_align(tabview, LV_ALIGN_TOP_MID, 0, 30);
+    lv_tabview_add_tab(tabview, "A");
+    lv_tabview_add_tab(tabview, "B");
+    lv_tabview_add_tab(tabview, "C");
+    lv_tabview_add_tab(tabview, "D");
+    lv_tabview_add_tab(tabview, "E");
 
     return screen;
 }
@@ -76,3 +76,15 @@ const app_descriptor_t app_setting = {
     .on_exit = setting_on_exit,
     .deinit = setting_deinit,
 };
+
+#ifdef LVGL_LIVE_PREVIEW
+void lvgl_live_preview_init(void)
+{
+    setting_init();
+    lv_obj_t *screen = setting_create_ui();
+    if (screen != NULL) {
+        lv_scr_load(screen);
+        setting_on_enter();
+    }
+}
+#endif

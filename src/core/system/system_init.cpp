@@ -52,6 +52,20 @@ void system_app_poll(void) {
     // Snapshot reads and all LVGL updates stay on the Arduino/UI core.
     SystemSnapshot state{};
     system_snapshot_read(&state);
+    static bool displayed_wifi_initialized = false;
+    static NetworkState displayed_network = NetworkState::UNINITIALIZED;
+    static uint8_t displayed_signal_level = 0;
+    if (!displayed_wifi_initialized || displayed_network != state.network ||
+        displayed_signal_level != state.wifi_signal_level) {
+        displayed_wifi_initialized = true;
+        displayed_network = state.network;
+        displayed_signal_level = state.wifi_signal_level;
+        ui_status_bar_set_wifi_status(
+            state.network == NetworkState::CONNECTED,
+            state.network == NetworkState::ERROR,
+            state.wifi_signal_level);
+    }
+
     static int displayed_hour = -1;
     static int displayed_minute = -1;
     static bool displayed_valid = false;
