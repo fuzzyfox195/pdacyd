@@ -1,4 +1,3 @@
-// LCDWIKI 2.8" ESP32-S3 (ES3C28P): ILI9341 + FT6236/FT6336U
 #pragma once
 
 #define LCD_H_RES        240

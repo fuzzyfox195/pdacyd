@@ -66,6 +66,12 @@ void system_app_poll(void) {
             state.wifi_signal_level);
     }
 
+    static uint8_t displayed_battery_percent = 255;
+    if (displayed_battery_percent != state.battery_percent) {
+        displayed_battery_percent = state.battery_percent;
+        ui_status_bar_set_battery_percent(state.battery_percent);
+    }
+
     static int displayed_hour = -1;
     static int displayed_minute = -1;
     static bool displayed_valid = false;

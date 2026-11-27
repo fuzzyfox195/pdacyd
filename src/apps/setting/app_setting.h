@@ -5,4 +5,6 @@
 
 extern const app_descriptor_t app_setting;
 
+void setting_show_menu(void);
+
 #endif /* APP_SETTING_H */

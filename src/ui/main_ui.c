@@ -2,6 +2,7 @@
 #include "include_screen.h"
 #include "assets/include_theme.h"
 #include "../core/application_manager/application_manager.h"
+#include "../core/screen_manager/screen_manager.h"
 
 lv_obj_t * ui_lock_screen;
 lv_obj_t * ui_start_screen;
@@ -19,5 +20,5 @@ void ui_init(void)
 
     ui_lock_screen_screen_init();
     ui_start_screen_screen_init();
-    lv_disp_load_scr(ui_start_screen);
+    screen_manager_show_boot_lock();
 }

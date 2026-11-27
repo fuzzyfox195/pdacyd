@@ -2,12 +2,12 @@
 
 ## Project
 
-This is a PlatformIO project (`src_dir = src`) using Arduino on `esp32-s3-devkitc1-n16r8`. The UI is mostly C and uses LVGL 8.x. Board setup, LovyanGFX display/touch integration, DMA flushing, battery sampling, and the LVGL loop are in `src/main.cpp`.
+This is a PlatformIO project (`src_dir = src`) using Arduino on `esp32-s3-devkitc1-n16r8`. The UI is mostly C and uses LVGL 8.x. Board setup, LovyanGFX display/touch integration, DMA flushing, and the LVGL loop are in `src/main.cpp`; battery sampling and voltage-to-percentage conversion run as a PRO service on Core 0.
 
 ## Module boundaries
 
 - `src/core/application_manager/`: app descriptor contract and one-foreground-app lifecycle.
-- `src/core/pro/`: Core 0 background services. `network/` reads SD Wi-Fi profiles and owns connection attempts; `time/` syncs from the Time.Now HTTPS API and owns the clock cache; `pro_logger` writes service events to SD. SNTP is used only to bootstrap TLS when no trusted clock cache exists.
+- `src/core/pro/`: Core 0 background services. `battery/` samples the board's divided battery voltage and estimates state of charge; `network/` reads SD Wi-Fi profiles and owns connection attempts; `time/` syncs from the Time.Now HTTPS API and owns the clock cache; `pro_logger` writes service events to SD. SNTP is used only to bootstrap TLS when no trusted clock cache exists.
 - `src/core/system/`: fixed-size command/event queues and a mutex-protected cross-core snapshot.
 - `src/core/screen_manager/`: LVGL screen selection, including return to the existing Home/Start Screen.
 - `src/apps/`: the ordered app registry and one directory per app. Each app owns its descriptor, Start Screen metadata, icon, UI, and lifecycle callbacks.
@@ -18,6 +18,7 @@ This is a PlatformIO project (`src_dir = src`) using Arduino on `esp32-s3-devkit
 src/
 ├── core/
 │   ├── application_manager/
+│   ├── pro/battery/           # Core 0 battery voltage and percentage service
 │   ├── pro/network/           # SD Wi-Fi profile and connection service
 │   ├── pro/time/              # Time.Now API clock and SD cache service
 │   ├── screen_manager/

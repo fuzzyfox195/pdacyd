@@ -23,9 +23,17 @@ typedef struct {
     uint32_t background;
 } ui_theme_palette_t;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern ui_theme_type_t ui_theme_current_type;
 
 const ui_theme_palette_t *ui_theme_get_current_palette(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #define COLOR_MAIN_CONTENT lv_color_hex(ui_theme_get_current_palette()->main_content)
 #define COLOR_PRIMARY lv_color_hex(ui_theme_get_current_palette()->primary)

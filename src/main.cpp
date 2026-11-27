@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <esp32-hal-adc.h>
 #include <esp_heap_caps.h>
 #include <lvgl.h>
 #include <LGFX_config.hpp>
@@ -7,13 +6,9 @@
 #include "ui/main_ui.h"
 #include "ui/status_bar/status_bar.h"
 #include "core/system/system_init.h"
-
-static constexpr uint8_t BATTERY_ADC_PIN = 9;
-
-static void battery_adc_timer(lv_timer_t *)
-{
-    ui_status_bar_set_battery_adc(analogRead(BATTERY_ADC_PIN));
-}
+#include "core/input/button_service.h"
+#include "core/power/sleep_manager.h"
+#include "input_pins.h"
 
 LGFX lcd;
 
@@ -79,6 +74,7 @@ void my_touch_read(lv_indev_drv_t *, lv_indev_data_t *data)
 
 void setup() {
     Serial.begin(115200);
+    sleep_manager_initialize();
     Serial.println("Starting LVGL with LovyanGFX on ESP32-S3...");
 
     if (!psramFound()) {
@@ -125,20 +121,23 @@ void setup() {
     indev_drv.read_cb = my_touch_read;
     lv_indev_drv_register(&indev_drv);
 
-    analogReadResolution(12);
-    analogSetPinAttenuation(BATTERY_ADC_PIN, ADC_11db);
-    ui_status_bar_set_battery_adc(analogRead(BATTERY_ADC_PIN));
-    lv_timer_create(battery_adc_timer, 1000, nullptr);
     ui_init();
 
     // PRO background services are pinned to Core 0; Arduino loop/UI remains on Core 1.
     if (!system_init()) {
         Serial.println("[SYS] Failed to start dual-core framework");
     }
+    button_service_init();
 }
 
 void loop() {
     system_app_poll();
+    static uint32_t last_button_poll_ms = 0;
+    const uint32_t button_now_ms = millis();
+    if (static_cast<uint32_t>(button_now_ms - last_button_poll_ms) >= BUTTON_POLL_INTERVAL_MS) {
+        last_button_poll_ms = button_now_ms;
+        button_service_poll(button_now_ms);
+    }
     static uint32_t last_tick = millis();
     const uint32_t now = millis();
 

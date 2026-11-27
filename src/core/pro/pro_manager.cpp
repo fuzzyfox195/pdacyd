@@ -1,6 +1,7 @@
 #include "pro_manager.h"
 #include "../system/system_comm.h"
 #include "network/network_service.h"
+#include "battery/battery_service.h"
 #include "pro_logger.h"
 #include "time/time_service.h"
 #include <Arduino.h>
@@ -19,9 +20,11 @@ static void pro_task(void *) {
     SystemSnapshot state{};
     state.network = NetworkState::UNINITIALIZED;
     state.wifi_signal_level = 0;
+    state.battery_percent = 0;
     PDACYD::pro_log_info("PRO", "task started core=%d", PRO_CORE);
     time_service.begin();
     PDACYD::NetworkService::begin();
+    PDACYD::BatteryService::begin();
     system_snapshot_write(&state);
     SystemEvent started{SystemEventType::PRO_STARTED, 0, millis()};
     system_publish_event(&started);
@@ -29,8 +32,14 @@ static void pro_task(void *) {
     TickType_t last_wake = xTaskGetTickCount();
     uint32_t last_heartbeat_ms = millis();
     bool announced_time_sync = false;
+    uint32_t last_battery_sample_ms = 0;
     for (;;) {
         const uint32_t now_ms = millis();
+        if (last_battery_sample_ms == 0 ||
+            static_cast<uint32_t>(now_ms - last_battery_sample_ms) >= 1000) {
+            last_battery_sample_ms = now_ms;
+            state.battery_percent = PDACYD::BatteryService::readPercent();
+        }
         SystemCommand command{};
         while (system_receive_command(&command, 0)) {
             if (command.type == SystemCommandType::TIME_SYNC) {

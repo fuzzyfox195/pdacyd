@@ -32,6 +32,9 @@ typedef struct app_descriptor {
     void (*on_resume)(void);
     void (*on_exit)(void);
     void (*deinit)(void);
+    bool (*on_back)(void); /* Return true when the app handled Back internally. */
+    void (*on_option)(void);
+    void (*on_favorite)(void);
 } app_descriptor_t;
 
 #endif

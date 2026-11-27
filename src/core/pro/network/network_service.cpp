@@ -207,8 +207,8 @@ void updateSignalLevel(uint32_t now_ms) {
         has_rssi_sample = true;
         const int rssi = WiFi.RSSI();
         signal_level = rssi == 0 ? 1 : levelFromRssi(rssi);
-        pro_log_info("NETWORK", "signal quality rssi=%d dBm level=%u/4",
-                     rssi, static_cast<unsigned>(signal_level));
+        Serial.printf("[NETWORK] signal quality rssi=%d dBm level=%u/4\n",
+                      rssi, static_cast<unsigned>(signal_level));
     }
 }
 } // namespace

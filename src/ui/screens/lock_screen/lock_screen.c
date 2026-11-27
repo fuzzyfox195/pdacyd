@@ -3,6 +3,8 @@
 #include "../../status_bar/status_bar.h"
 #include "../../assets/include_theme.h"
 
+static lv_obj_t *unlock_guide_label;
+
 void ui_lock_screen_screen_init(void)
 {
     ui_lock_screen = lv_obj_create(NULL);
@@ -26,8 +28,8 @@ void ui_lock_screen_screen_init(void)
     lv_obj_set_style_text_align(user_name_label, LV_TEXT_ALIGN_LEFT, LV_PART_MAIN);
     lv_obj_set_style_text_font(user_name_label, HEADING_FONT, LV_PART_MAIN);
 
-    lv_obj_t *unlock_guide_label = lv_label_create(ui_lock_screen);
-    lv_label_set_text(unlock_guide_label, "Press\nto start ");
+    unlock_guide_label = lv_label_create(ui_lock_screen);
+    lv_label_set_text(unlock_guide_label, "Press\nto start");
     lv_obj_set_width(unlock_guide_label, LV_SIZE_CONTENT);
     lv_obj_align(unlock_guide_label, LV_ALIGN_TOP_RIGHT, -28, 48);
     lv_obj_set_style_text_color(unlock_guide_label, COLOR_HINT_GRAY, LV_PART_MAIN);
@@ -44,4 +46,13 @@ void ui_lock_screen_screen_init(void)
     lv_obj_set_style_radius(square_button, RADIUS_DEFAULT, LV_PART_MAIN);
     lv_obj_clear_flag(square_button, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_scrollbar_mode(square_button, LV_SCROLLBAR_MODE_OFF);
+}
+
+void ui_lock_screen_set_resume_mode(bool resume_previous)
+{
+    if (unlock_guide_label != NULL) {
+        lv_label_set_text(unlock_guide_label,
+                          resume_previous ? "Press\nto continue" :
+                                            "Press\nto start");
+    }
 }

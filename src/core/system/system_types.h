@@ -38,6 +38,7 @@ struct SystemSnapshot {
     uint8_t time_second;
     uint8_t time_weekday;
     uint8_t wifi_signal_level;
+    uint8_t battery_percent;
     float temperature_c;
     uint8_t humidity;
     uint32_t weather_updated_ms;

@@ -28,6 +28,7 @@ static lv_obj_t *stopwatch_minutes_label;
 static lv_obj_t *stopwatch_seconds_label;
 static lv_obj_t *stopwatch_control_label;
 static lv_timer_t *stopwatch_update_timer;
+static bool stopwatch_resume_running_after_sleep;
 
 static void stopwatch_update_display(void)
 {
@@ -64,6 +65,7 @@ static void stopwatch_update_timer_cb(lv_timer_t *timer)
 static bool stopwatch_init(void)
 {
     stopwatch_state = STOPWATCH_STATE_IDLE;
+    stopwatch_resume_running_after_sleep = false;
     stopwatch_elapsed_ms = 0;
     stopwatch_started_at = 0;
     stopwatch_hours_label = NULL;
@@ -72,12 +74,6 @@ static bool stopwatch_init(void)
     stopwatch_control_label = NULL;
     stopwatch_update_timer = NULL;
     return true;
-}
-
-static void stopwatch_back_clicked(lv_event_t *event)
-{
-    (void)event;
-    application_manager_close();
 }
 
 static void stopwatch_reset_clicked(lv_event_t *event)
@@ -181,25 +177,16 @@ static lv_obj_t *stopwatch_create_ui(void)
     const lv_coord_t seconds_x = second_colon_x + colon_width + STOPWATCH_COLON_GAP;
     lv_obj_align(stopwatch_seconds_label, LV_ALIGN_TOP_LEFT, seconds_x, 0);
 
-    lv_obj_t *back_button = lv_btn_create(screen);
-    lv_obj_set_size(back_button, 90, 20);
-    lv_obj_align(back_button, LV_ALIGN_BOTTOM_LEFT, 12, -12);
-    lv_obj_add_event_cb(back_button, stopwatch_back_clicked, LV_EVENT_CLICKED, NULL);
-
     lv_obj_t *control_button = lv_btn_create(screen);
     lv_obj_set_size(control_button, 140, 50);
     lv_obj_align(control_button, LV_ALIGN_LEFT_MID, 12, 30);
-    lv_obj_add_event_cb(control_button, stopwatch_continue_pause_clicked, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(control_button, stopwatch_continue_pause_clicked,
+                        LV_EVENT_CLICKED, NULL);
 
     lv_obj_t *reset_button = lv_btn_create(screen);
     lv_obj_set_size(reset_button, 140, 50);
     lv_obj_align(reset_button, LV_ALIGN_RIGHT_MID, -12, 30);
     lv_obj_add_event_cb(reset_button, stopwatch_reset_clicked, LV_EVENT_CLICKED, NULL);
-
-    lv_obj_t *back_label = lv_label_create(back_button);
-    lv_label_set_text(back_label, "Back");
-    lv_obj_set_style_text_font(back_label, FONT_SIZE_12, LV_PART_MAIN);
-    lv_obj_center(back_label);
 
     stopwatch_control_label = lv_label_create(control_button);
     lv_label_set_text(stopwatch_control_label, "Start");
@@ -231,10 +218,27 @@ static void stopwatch_on_enter(void)
 
 static void stopwatch_on_pause(void)
 {
+    stopwatch_resume_running_after_sleep = stopwatch_state == STOPWATCH_STATE_RUNNING;
+    if (!stopwatch_resume_running_after_sleep) return;
+
+    stopwatch_elapsed_ms += lv_tick_get() - stopwatch_started_at;
+    stopwatch_state = STOPWATCH_STATE_PAUSED;
+    if (stopwatch_control_label != NULL) {
+        lv_label_set_text(stopwatch_control_label, "Continue");
+    }
+    stopwatch_update_display();
 }
 
 static void stopwatch_on_resume(void)
 {
+    if (!stopwatch_resume_running_after_sleep) return;
+    stopwatch_resume_running_after_sleep = false;
+    stopwatch_started_at = lv_tick_get();
+    stopwatch_state = STOPWATCH_STATE_RUNNING;
+    if (stopwatch_control_label != NULL) {
+        lv_label_set_text(stopwatch_control_label, "Pause");
+    }
+    stopwatch_update_display();
 }
 
 static void stopwatch_on_exit(void)

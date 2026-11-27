@@ -57,12 +57,6 @@ static void start_log_load(void)
     if (load_timer != NULL) lv_timer_set_repeat_count(load_timer, 1);
 }
 
-static void system_log_back_clicked(lv_event_t *event)
-{
-    (void)event;
-    application_manager_close();
-}
-
 static void system_log_refresh_clicked(lv_event_t *event)
 {
     (void)event;
@@ -107,14 +101,6 @@ static lv_obj_t *system_log_create_ui(void)
     lv_label_set_text(loading_label, "Loading logs from SD...");
     lv_obj_set_style_text_color(loading_label, COLOR_HINT_GRAY, LV_PART_MAIN);
     lv_obj_align(loading_label, LV_ALIGN_CENTER, 0, 24);
-
-    lv_obj_t *back_button = lv_btn_create(log_screen);
-    lv_obj_set_size(back_button, 90, 38);
-    lv_obj_align(back_button, LV_ALIGN_BOTTOM_LEFT, 12, -8);
-    lv_obj_add_event_cb(back_button, system_log_back_clicked, LV_EVENT_CLICKED, NULL);
-    lv_obj_t *back_label = lv_label_create(back_button);
-    lv_label_set_text(back_label, "Back");
-    lv_obj_center(back_label);
 
     lv_obj_t *refresh_button = lv_btn_create(log_screen);
     lv_obj_set_size(refresh_button, 90, 38);

@@ -1,14 +1,18 @@
 #include "status_bar.h"
 #include "../assets/include_theme.h"
 
+extern const lv_img_dsc_t icon_phone_connected;
+
 #define STATUS_BAR_HEIGHT 24
 #define STATUS_BAR_INSTANCE_LIMIT 8
 
 static lv_obj_t *battery_fills[STATUS_BAR_INSTANCE_LIMIT];
+static lv_obj_t *battery_labels[STATUS_BAR_INSTANCE_LIMIT];
 static lv_obj_t *time_labels[STATUS_BAR_INSTANCE_LIMIT];
 static lv_obj_t *wifi_segments[STATUS_BAR_INSTANCE_LIMIT][4];
 static lv_obj_t *wifi_error_labels[STATUS_BAR_INSTANCE_LIMIT];
-static int latest_adc_raw;
+static uint8_t latest_battery_percent;
+static char latest_battery_text[5] = "0%";
 static char latest_time_text[6] = "00:00";
 static bool latest_wifi_connected;
 static bool latest_wifi_error;
@@ -20,6 +24,17 @@ static void battery_fill_deleted(lv_event_t *event)
     for (size_t i = 0; i < STATUS_BAR_INSTANCE_LIMIT; ++i) {
         if (battery_fills[i] == deleted_fill) {
             battery_fills[i] = NULL;
+            return;
+        }
+    }
+}
+
+static void battery_label_deleted(lv_event_t *event)
+{
+    lv_obj_t *deleted_label = lv_event_get_target(event);
+    for (size_t i = 0; i < STATUS_BAR_INSTANCE_LIMIT; ++i) {
+        if (battery_labels[i] == deleted_label) {
+            battery_labels[i] = NULL;
             return;
         }
     }
@@ -100,27 +115,24 @@ static lv_obj_t *make_rect(lv_obj_t *parent, lv_coord_t width, lv_coord_t height
     return obj;
 }
 
-static void update_battery(int adc_raw)
+static void update_battery(uint8_t percent)
 {
-    /* Set these to calibrated ADC readings for empty/full battery voltage. */
-    const int adc_empty = 0;
-    const int adc_full = 4095;
-    int percent = (adc_raw - adc_empty) * 100 / (adc_full - adc_empty);
-    if (percent < 0) percent = 0;
-    if (percent > 100) percent = 100;
-    percent = ((percent + 2) / 5) * 5;
-
     for (size_t i = 0; i < STATUS_BAR_INSTANCE_LIMIT; ++i) {
         if (battery_fills[i] != NULL) {
             lv_obj_set_width(battery_fills[i], (lv_coord_t)(14 * percent / 100));
         }
+        if (battery_labels[i] != NULL) {
+            lv_label_set_text(battery_labels[i], latest_battery_text);
+        }
     }
 }
 
-void ui_status_bar_set_battery_adc(int adc_raw)
+void ui_status_bar_set_battery_percent(uint8_t percent)
 {
-    latest_adc_raw = adc_raw;
-    update_battery(latest_adc_raw);
+    latest_battery_percent = percent > 100 ? 100 : percent;
+    lv_snprintf(latest_battery_text, sizeof(latest_battery_text), "%u%%",
+                (unsigned)latest_battery_percent);
+    update_battery(latest_battery_percent);
 }
 
 void ui_status_bar_set_time(uint8_t hour, uint8_t minute, bool valid)
@@ -162,7 +174,7 @@ void ui_status_bar_create(lv_obj_t *parent)
     lv_label_set_text(time, latest_time_text);
     lv_obj_set_style_text_color(time, COLOR_MAIN_CONTENT, LV_PART_MAIN);
     lv_obj_set_style_text_font(time, &lv_font_montserrat_18, LV_PART_MAIN);
-    lv_obj_align(time, LV_ALIGN_LEFT_MID, 8, 0);
+    lv_obj_align(time, LV_ALIGN_LEFT_MID, 8, 2);
     bool time_tracked = false;
     for (size_t i = 0; i < STATUS_BAR_INSTANCE_LIMIT; ++i) {
         if (time_labels[i] == NULL) {
@@ -176,7 +188,7 @@ void ui_status_bar_create(lv_obj_t *parent)
     const lv_coord_t icon_gap = 8;
     const lv_coord_t battery_width = 25;
     const lv_coord_t signal_width = 24;
-    const lv_coord_t battery_right_offset = -12;
+    const lv_coord_t battery_right_offset = -64;
     const lv_coord_t signal_right_offset = battery_right_offset - battery_width - icon_gap;
     const lv_coord_t phone_right_offset = signal_right_offset - signal_width - icon_gap;
     const int wifi_slot = reserve_wifi_slot();
@@ -184,7 +196,7 @@ void ui_status_bar_create(lv_obj_t *parent)
     lv_obj_t *battery = lv_obj_create(bar);
     lv_obj_remove_style_all(battery);
     lv_obj_set_size(battery, battery_width, 15);
-    lv_obj_align(battery, LV_ALIGN_RIGHT_MID, battery_right_offset, 0);
+    lv_obj_align(battery, LV_ALIGN_RIGHT_MID, battery_right_offset, 2);
     lv_obj_set_style_border_color(battery, COLOR_MAIN_CONTENT, LV_PART_MAIN);
     lv_obj_set_style_border_width(battery, 2, LV_PART_MAIN);
     lv_obj_set_style_radius(battery, 3, LV_PART_MAIN);
@@ -204,10 +216,34 @@ void ui_status_bar_create(lv_obj_t *parent)
     if (tracked) {
         lv_obj_add_event_cb(battery_fill, battery_fill_deleted, LV_EVENT_DELETE, NULL);
     }
-    update_battery(latest_adc_raw);
+
+    const char battery_max_text[] = "100%";
+    const lv_coord_t battery_label_width = lv_txt_get_width(
+        battery_max_text, sizeof(battery_max_text) - 1, &lv_font_montserrat_18,
+        0, LV_TEXT_FLAG_NONE);
+    lv_obj_t *battery_label = lv_label_create(bar);
+    lv_label_set_text(battery_label, latest_battery_text);
+    lv_obj_set_width(battery_label, battery_label_width);
+    lv_obj_set_style_text_font(battery_label, &lv_font_montserrat_18, LV_PART_MAIN);
+    lv_obj_set_style_text_color(battery_label, COLOR_MAIN_CONTENT, LV_PART_MAIN);
+    lv_obj_set_style_text_align(battery_label, LV_TEXT_ALIGN_RIGHT, LV_PART_MAIN);
+    lv_obj_align(battery_label, LV_ALIGN_RIGHT_MID, -8, 2);
+    tracked = false;
+    for (size_t i = 0; i < STATUS_BAR_INSTANCE_LIMIT; ++i) {
+        if (battery_labels[i] == NULL) {
+            battery_labels[i] = battery_label;
+            tracked = true;
+            break;
+        }
+    }
+    if (tracked) {
+        lv_obj_add_event_cb(battery_label, battery_label_deleted, LV_EVENT_DELETE, NULL);
+    }
+
+    update_battery(latest_battery_percent);
 
     lv_obj_t *signal_base = make_rect(bar, signal_width, 1, COLOR_BACKGROUND, 0);
-    lv_obj_align(signal_base, LV_ALIGN_BOTTOM_RIGHT, signal_right_offset, -4);
+    lv_obj_align(signal_base, LV_ALIGN_BOTTOM_RIGHT, signal_right_offset, -2);
     const lv_coord_t heights[] = {7, 10, 13, 15};
     for (int i = 0; i < 4; ++i) {
         lv_obj_t *bar_segment = make_rect(bar, 4, heights[i], COLOR_MAIN_CONTENT, 1);
@@ -223,7 +259,7 @@ void ui_status_bar_create(lv_obj_t *parent)
     lv_label_set_text(wifi_error, "!");
     lv_obj_set_style_text_font(wifi_error, &lv_font_montserrat_16, LV_PART_MAIN);
     lv_obj_set_style_text_color(wifi_error, lv_palette_main(LV_PALETTE_RED), LV_PART_MAIN);
-    lv_obj_align(wifi_error, LV_ALIGN_BOTTOM_RIGHT, signal_right_offset + 5, -1);
+    lv_obj_align(wifi_error, LV_ALIGN_BOTTOM_RIGHT, signal_right_offset + 5, 1);
     lv_obj_add_flag(wifi_error, LV_OBJ_FLAG_HIDDEN);
     if (wifi_slot >= 0) {
         wifi_error_labels[wifi_slot] = wifi_error;
@@ -231,15 +267,10 @@ void ui_status_bar_create(lv_obj_t *parent)
     }
     if (wifi_slot >= 0) update_wifi_slot((size_t)wifi_slot);
 
-    /* phone_connect placeholder: simple phone outline with a status dot */
-    lv_obj_t *phone = lv_obj_create(bar);
-    lv_obj_remove_style_all(phone);
-    lv_obj_set_size(phone, 10, 16);
-    lv_obj_align(phone, LV_ALIGN_RIGHT_MID, phone_right_offset, 0);
-    lv_obj_set_style_border_color(phone, COLOR_MAIN_CONTENT, LV_PART_MAIN);
-    lv_obj_set_style_border_width(phone, 2, LV_PART_MAIN);
-    lv_obj_set_style_radius(phone, 2, LV_PART_MAIN);
-    lv_obj_clear_flag(phone, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_t *phone_dot = make_rect(phone, 2, 2, COLOR_MAIN_CONTENT, LV_RADIUS_CIRCLE);
-    lv_obj_align(phone_dot, LV_ALIGN_BOTTOM_MID, 0, -1);
+    lv_obj_t *phone = lv_img_create(bar);
+    lv_img_set_src(phone, &icon_phone_connected);
+    lv_img_set_zoom(phone, 205); /* 80% of the original 24x24 asset */
+    lv_obj_set_style_img_recolor(phone,COLOR_MAIN_CONTENT, LV_PART_MAIN);
+    lv_obj_set_style_img_recolor_opa(phone, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_align(phone, LV_ALIGN_RIGHT_MID, phone_right_offset, 2);
 }

@@ -45,3 +45,19 @@ This file contains all information regarding known Wi-Fi networks, along with th
 2. weather.json
 
 WIP
+
+3. `/data/i2c.json` — danh sách thiết bị I2C đã nhận diện. `address` lưu dưới dạng chuỗi địa chỉ hex và `part` là mã linh kiện hiển thị trong Settings → I2C Scan.
+``` text
+{
+  "i2c": [
+    {
+      "address": "0x20",
+      "part": "INA219"
+    },
+    {
+      "address": "0x3F",
+      "part": "PCF8575"
+    }
+  ]
+}
+```

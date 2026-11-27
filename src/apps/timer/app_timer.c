@@ -45,6 +45,7 @@ static lv_obj_t *timer_minutes_label;
 static lv_obj_t *timer_seconds_label;
 static lv_obj_t *timer_control_label;
 static lv_timer_t *timer_update_timer;
+static bool timer_resume_running_after_sleep;
 
 
 static void timer_update_display(void)
@@ -95,6 +96,7 @@ static void timer_update_timer_cb(lv_timer_t *timer)
 static bool timer_init(void)
 {
     timer_state = TIMER_STATE_IDLE;
+    timer_resume_running_after_sleep = false;
     timer_elapsed_ms = 0;
     timer_started_at = 0;
     timer_setted_ms = 0;
@@ -104,12 +106,6 @@ static bool timer_init(void)
     timer_control_label = NULL;
     timer_update_timer = NULL;
     return true;
-}
-
-static void timer_back_clicked(lv_event_t *event)
-{
-    (void)event;
-    application_manager_close();
 }
 
 static void timer_reset_clicked(lv_event_t *event)
@@ -240,16 +236,6 @@ static lv_obj_t *timer_create_ui(void)
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
     ui_status_bar_create(screen);
 
-    // back button
-    lv_obj_t *back_button = lv_btn_create(screen);
-    lv_obj_set_size(back_button, 90, 20);
-    lv_obj_align(back_button, LV_ALIGN_BOTTOM_LEFT, 12, -12);
-    lv_obj_add_event_cb(back_button, timer_back_clicked, LV_EVENT_CLICKED, NULL);
-    lv_obj_t *back_label = lv_label_create(back_button);
-    lv_label_set_text(back_label, "Back");
-    lv_obj_set_style_text_font(back_label, FONT_SIZE_12, LV_PART_MAIN);
-    lv_obj_center(back_label);
-
     const lv_coord_t digit_width = (lv_coord_t)lv_font_get_glyph_width(
         CONTENT_TIMER_FONT, '0', '0');
     const lv_coord_t colon_width = (lv_coord_t)lv_font_get_glyph_width(
@@ -353,10 +339,28 @@ static void timer_on_enter(void) {
 }
 
 static void timer_on_pause(void) {
-    // will be use if app is allow to run in background
+    timer_resume_running_after_sleep = timer_state == TIMER_STATE_RUNNING;
+    if (!timer_resume_running_after_sleep) return;
+
+    const uint32_t elapsed_since_start = lv_tick_get() - timer_started_at;
+    timer_elapsed_ms = elapsed_since_start >= timer_elapsed_ms
+                           ? 0
+                           : timer_elapsed_ms - elapsed_since_start;
+    timer_state = timer_elapsed_ms == 0 ? TIMER_STATE_IDLE : TIMER_STATE_PAUSED;
+    if (timer_control_label != NULL) {
+        lv_label_set_text(timer_control_label,
+                          timer_state == TIMER_STATE_IDLE ? "Start" : "Continue");
+    }
+    timer_update_display();
 }
 static void timer_on_resume(void) {
-    // will be use if app is allow to run in background
+    if (!timer_resume_running_after_sleep) return;
+    timer_resume_running_after_sleep = false;
+    if (timer_elapsed_ms == 0) return;
+    timer_started_at = lv_tick_get();
+    timer_state = TIMER_STATE_RUNNING;
+    if (timer_control_label != NULL) lv_label_set_text(timer_control_label, "Pause");
+    timer_update_display();
 }
 
 static void timer_on_exit(void) {
